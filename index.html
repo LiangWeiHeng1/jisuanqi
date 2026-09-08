@@ -87,52 +87,86 @@
         </div>
     </div>
     <script>
-        (function() {
-            var wrapper = document.getElementById('liveWrapper');
-            var iframe = document.getElementById('liveIframe');
-            var placeholder = document.getElementById('livePlaceholder');
-            var placeholderTitle = document.getElementById('placeholderTitle');
-            var placeholderDesc = document.getElementById('placeholderDesc');
+// ================================================================
+// 直播控制（精确到秒）
+// ================================================================
+
+(function() {
+    var wrapper = document.getElementById('liveWrapper');
+    var iframe = document.getElementById('liveIframe');
+    var placeholder = document.getElementById('livePlaceholder');
+    var placeholderTitle = document.getElementById('placeholderTitle');
+    var placeholderDesc = document.getElementById('placeholderDesc');
+    
+    function resize() { 
+        var w = wrapper.clientWidth; 
+        iframe.style.height = (w * 0.6) + 'px'; 
+    }
+    window.addEventListener('resize', resize);
+    setTimeout(resize, 100);
+
+    var liveStarted = false;
+
+    // ═══════════════════════════════════════════════════════════════
+    // 在这里修改开播和结束时间（24小时制，精确到秒）
+    // ═══════════════════════════════════════════════════════════════
+    var START_HOUR = 21;    // 开播小时
+    var START_MIN = 32;     // 开播分钟
+    var START_SEC = 50;      // 开播秒数（精确到秒）
+    
+    var END_HOUR = 21;      // 结束小时（次日）
+    var END_MIN = 34;       // 结束分钟
+    var END_SEC = 30;        // 结束秒数（精确到秒）
+    // ═══════════════════════════════════════════════════════════════
+
+    function checkShowLive() {
+        var now = new Date();
+        var totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+        
+        var startSec = START_HOUR * 3600 + START_MIN * 60 + START_SEC;
+        var endSec = END_HOUR * 3600 + END_MIN * 60 + END_SEC;
+        
+        var isLiveTime = false;
+        
+        if (startSec > endSec) {
+            // 跨天：例如 23:26:00 ~ 次日 21:35:00
+            if (totalSec >= startSec || totalSec < endSec) {
+                isLiveTime = true;
+            }
+        } else if (startSec < endSec) {
+            // 不跨天：例如 21:33:00 ~ 21:35:00
+            if (totalSec >= startSec && totalSec < endSec) {
+                isLiveTime = true;
+            }
+        }
+        // 如果 startSec === endSec，永远不显示
+
+        if (isLiveTime) {
+            iframe.style.display = 'block';
+            placeholder.style.display = 'none';
+            if (!liveStarted) {
+                liveStarted = true;
+                resize();
+            }
+        } else {
+            iframe.style.display = 'none';
+            placeholder.style.display = 'flex';
             
-            function resize() { 
-                var w = wrapper.clientWidth; 
-                iframe.style.height = (w * 0.6) + 'px'; 
+            if (liveStarted) {
+                liveStarted = false;
+                placeholderTitle.textContent = '🎰 搅珠直播';
+                placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
+            } else {
+                placeholderTitle.textContent = '🎰 搅珠直播';
+                placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
             }
-            window.addEventListener('resize', resize);
-            setTimeout(resize, 100);
+        }
+    }
 
-            var liveStarted = false;
-
-            function checkShowLive() {
-                var now = new Date();
-                var hours = now.getHours();
-                var minutes = now.getMinutes();
-                var totalMinutes = hours * 60 + minutes;
-                var startTime = 21 * 60 + 33;
-                var endTime = 21 * 60 + 35;
-
-                if (totalMinutes >= startTime && totalMinutes < endTime) {
-                    iframe.style.display = 'block';
-                    placeholder.style.display = 'none';
-                    liveStarted = true;
-                    resize();
-                } else {
-                    iframe.style.display = 'none';
-                    placeholder.style.display = 'flex';
-                    
-                    if (liveStarted) {
-                        placeholderTitle.textContent = '🎰 搅珠直播';
-                        placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
-                    } else {
-                        placeholderTitle.textContent = '🎰 搅珠直播';
-                        placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
-                    }
-                }
-            }
-
-            checkShowLive();
-            setInterval(checkShowLive, 10000);
-        })();
+    checkShowLive();
+    // 每秒检查一次，实现秒级精确控制
+    setInterval(checkShowLive, 1000);
+})();
     </script>
 
     <div class="water-rate-row">
@@ -304,19 +338,34 @@ function parseErSan(line) {
         }
     }
     
-    return {
-        type: type === '二中二' ? 'erzhonger' : 'sanzhongsan',
-        category: 'other',
-        numbers: numbers,
-        amount: amount,
-        n: n,
-        isSingle: isSingle,
-        isMultiple: isMultiple,
-        display: (isSingle ? '单式' : '复式') + ' ' + type + ' ' + numbers.join(',') + ' ' + separator + amount + '元' + (isSingle ? ' (必须全中)' : ' (中' + n + '个组合)'),
-        raw: line
-    };
+// 计算总投注额
+let totalAmount = amount;
+if (isMultiple) {
+    const totalGroups = comb(numbers.length, n);
+    totalAmount = totalGroups * amount;  // 总投注额 = 组合数 × 单组金额
 }
 
+// 构建 display
+let displayText = '';
+if (isSingle) {
+    displayText = '单式 ' + type + ' ' + numbers.join(',') + ' ' + separator + amount + '元 (必须全中)';
+} else {
+    const totalGroups = comb(numbers.length, n);
+    displayText = type + numbers.join(',') + '各' + amount + '，共' + totalGroups + '组×' + amount + '元=' + totalAmount + '元';
+}
+
+return {
+    type: type === '二中二' ? 'erzhonger' : 'sanzhongsan',
+    category: 'other',
+    amount: totalAmount,
+    unitAmount: amount,
+    n: n,
+    isSingle: isSingle,
+    isMultiple: isMultiple,
+    display: displayText,
+    raw: line
+};
+}
 // ================================================================
 // 二中二 / 三中三 中奖计算
 // ================================================================
@@ -325,47 +374,42 @@ function calcErSanWin(bet, result) {
     if (!result) return { winAmount: 0, detail: '无开奖结果' };
     
     const openCodes = result.codes || [];
-    const pingMa = openCodes.slice(0, 6); // 平码（前6个）
+    const pingMa = openCodes.slice(0, 6);
     const numbers = bet.numbers || [];
-    const amount = bet.amount || 0;
     const n = bet.n || 2;
-    
-    // 赔率：二中二=60，三中三=600
     const odds = n === 2 ? 60 : 600;
+    const unitAmount = bet.unitAmount || bet.amount || 0;  // 单组金额
     
-    // 计算平码命中了几个数字
     const hitNumbers = numbers.filter(num => pingMa.includes(num));
     const hitCount = hitNumbers.length;
     
     if (bet.isSingle) {
-        // 单式：必须全部命中
         if (hitCount === n) {
-            const win = amount * odds;
+            const win = unitAmount * odds;  // 单式：单组金额 × 赔率
             return { 
                 winAmount: win, 
-                detail: '全部命中 ' + hitNumbers.join(',') + ' → ' + amount + '×' + odds + '倍=' + win
+                detail: '全部命中 ' + hitNumbers.join(',') + ' → ' + unitAmount + '×' + odds + '倍=' + win
             };
         } else {
             return { 
                 winAmount: 0, 
-                detail: '未全中 (命中' + hitCount + '/' + n + '个)' 
+                detail: '未中奖(匹配' + hitCount + '/' + n + '个)'
             };
         }
     }
     
     if (bet.isMultiple) {
-        // 复式：命中N个，中 C(hitCount, n) 组
         if (hitCount >= n) {
             const groups = comb(hitCount, n);
-            const win = groups * amount * odds;
+            const win = groups * unitAmount * odds;  // 复式：命中组数 × 单组金额 × 赔率
             return { 
                 winAmount: win, 
-                detail: '命中' + hitCount + '个 (' + hitNumbers.join(',') + ') → C(' + hitCount + ',' + n + ')=' + groups + '组 × ' + amount + '×' + odds + '倍=' + win
+                detail: '命中' + hitCount + '个 (' + hitNumbers.join(',') + ') → C(' + hitCount + ',' + n + ')=' + groups + '组 × ' + unitAmount + '×' + odds + '倍=' + win
             };
         } else {
             return { 
                 winAmount: 0, 
-                detail: '命中' + hitCount + '个 (需要至少' + n + '个)' 
+                detail: '未中奖(匹配' + hitCount + '个)'
             };
         }
     }
