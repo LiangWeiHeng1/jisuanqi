@@ -1317,37 +1317,55 @@ function autoResizeInput() {
 }
 
 function pasteAndAppend() {
-    // 优先使用 Android 注入接口 (APK专用)
-    if (window.AndroidClipboard && window.AndroidClipboard.getText) {
+    // 方式1：调用 Android 原生桥接（APK 专用）
+    if (window.jsAndroidBridge && window.jsAndroidBridge.getClipboardText) {
         try {
-            var text = window.AndroidClipboard.getText();
+            var text = window.jsAndroidBridge.getClipboardText();
             if (text && text.trim()) {
-                var input = document.getElementById("betInput");
-                var current = input.value;
-                var separator = (current && current.trim() !== "") ? "\n" : "";
-                input.value = current + separator + text.trim();
-                input.dispatchEvent(new Event("input"));
-                input.scrollTop = input.scrollHeight;
-                autoResizeInput();
+                appendToInput(text.trim());
                 return;
             }
         } catch (e) {}
     }
 
-    // 网页版用 navigator.clipboard
-    if (navigator.clipboard && navigator.clipboard.readText) {
-        navigator.clipboard.readText().then(function(text) {
+    // 方式2：旧版桥接名称兼容
+    if (window.AndroidClipboard && window.AndroidClipboard.getText) {
+        try {
+            var text = window.AndroidClipboard.getText();
             if (text && text.trim()) {
-                var input = document.getElementById("betInput");
-                var current = input.value;
-                var separator = (current && current.trim() !== "") ? "\n" : "";
-                input.value = current + separator + text.trim();
-                input.dispatchEvent(new Event("input"));
-                input.scrollTop = input.scrollHeight;
-                autoResizeInput();
+                appendToInput(text.trim());
+                return;
             }
-        }).catch(function() {});
+        } catch (e) {}
     }
+
+    // 方式3：网页标准 API（仅部分浏览器生效）
+    if (navigator.clipboard && navigator.clipboard.readText) {
+        navigator.clipboard.readText()
+            .then(function(text) {
+                if (text && text.trim()) {
+                    appendToInput(text.trim());
+                }
+            })
+            .catch(function() {
+                alert('无法读取剪贴板，请长按输入框手动粘贴');
+            });
+        return;
+    }
+
+    // 全部失败，提示用户
+    alert('无法读取剪贴板，请长按输入框手动粘贴');
+}
+
+// 辅助函数：追加文本到输入框
+function appendToInput(text) {
+    var input = document.getElementById("betInput");
+    var current = input.value;
+    var separator = (current && current.trim() !== "") ? "\n" : "";
+    input.value = current + separator + text;
+    input.dispatchEvent(new Event("input"));
+    input.scrollTop = input.scrollHeight;
+    autoResizeInput();
 }
 
 // ================================================================
