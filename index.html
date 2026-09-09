@@ -176,7 +176,7 @@
         <span style="font-size:12px;color:#8895aa;margin-left:4px;">(投注金额 × 百分比)</span>
     </div>
     <div class="input-area">
-        <textarea id="betInput" placeholder="输入投注，一行一条"></textarea>
+        <textarea id="betInput"></textarea>
     </div>
     <div class="btn-group">
         <button class="btn btn-success" id="pasteBtn">📋 粘贴</button>
@@ -252,7 +252,99 @@ const ODDS = {
     'combo_zodiac_4': 30, 'combo_zodiac_4_ma': 28,
     'combo_zodiac_5': 100, 'combo_zodiac_5_ma': 80,
     'combo_tail_2': 3, 'combo_tail_3': 7, 'combo_tail_4': 15,
+    'not_hit_5': 2,     // 五不中 2倍
+    'not_hit_10': 4.5   // 十不中 4.5倍
 };
+
+// ================================================================
+// 五不中 / 十不中 解析（支持各种符号）
+// ================================================================
+
+function parseNotHit(line) {
+    // 匹配格式：各种符号分隔的数字 + 五不中/十不中 + 金额
+    // 支持：. 、 ， , 空格 / - # 等
+    const match = line.match(/^([\d.、，,。\s\/\-#]+)(五不中|十不中)\s*(\d+)$/);
+    if (!match) return null;
+    
+    const numStr = match[1];
+    const type = match[2];
+    const amount = parseInt(match[3]);
+    
+    // 提取所有数字（支持各种分隔符）
+    const nums = numStr.match(/\d+/g);
+    if (!nums || nums.length === 0) return null;
+    const numbers = nums.map(Number);
+    
+    const isFive = type === '五不中';
+    const isTen = type === '十不中';
+    
+    // 验证数字个数
+    if (isFive && numbers.length !== 5) {
+        return {
+            type: 'error',
+            category: 'other',
+            raw: line,
+            display: '❌ 五不中需要5个数字，当前' + numbers.length + '个'
+        };
+    }
+    if (isTen && numbers.length !== 10) {
+        return {
+            type: 'error',
+            category: 'other',
+            raw: line,
+            display: '❌ 十不中需要10个数字，当前' + numbers.length + '个'
+        };
+    }
+    
+    const typeName = isFive ? '五不中' : '十不中';
+    const displayText = numbers.join(',') + ' ' + typeName + ' ' + amount + '元 (全不中才赢)';
+    
+    return {
+        type: isFive ? 'not_hit_5' : 'not_hit_10',
+        category: 'special',
+        numbers: numbers,
+        amount: amount,
+        unitPrice: amount,
+        display: displayText,
+        raw: line
+    };
+}
+
+// ================================================================
+// 五不中 / 十不中 中奖计算
+// ================================================================
+
+function calcNotHitWin(bet, result) {
+    if (!result) return { winAmount: 0, detail: '无开奖结果' };
+    
+    const openCodes = result.codes || [];
+    const allCodes = openCodes; // 全部7个号码（6平码+特码）
+    const betNumbers = bet.numbers || [];
+    const unitPrice = bet.unitPrice || bet.amount || 0;
+    
+    // 检查是否有任何一个投注数字出现在开奖号码中
+    const hitNumbers = betNumbers.filter(num => allCodes.includes(num));
+    const hitCount = hitNumbers.length;
+    
+    if (hitCount === 0) {
+        // 全不中 → 中奖
+        const isFive = bet.type === 'not_hit_5';
+        const odds = isFive ? 2 : 4.5;
+        const winAmount = unitPrice * odds;
+        const typeName = isFive ? '五不中' : '十不中';
+        return {
+            winAmount: winAmount,
+            detail: '✅ 全不中！' + betNumbers.join(',') + ' 均未开出 → ' + unitPrice + '×' + odds + '倍=' + winAmount + '元'
+        };
+    } else {
+        // 有数字中了 → 输
+        const typeName = bet.type === 'not_hit_5' ? '五不中' : '十不中';
+        return {
+            winAmount: 0,
+            detail: '❌ 命中 ' + hitNumbers.join(',') + ' (' + hitCount + '个) → 不中'
+        };
+    }
+}
 
 // ================================================================
 // 二中二 / 三中三 解析
@@ -526,7 +618,11 @@ function parseBet(line) {
     line = line.replace(/\s+/g, ' ').trim();
     line = line.replace(/[：:]/g, '/');
 
-    // 检测二中二/三中三（放在最前面，优先匹配）
+    // 先检测五不中/十不中（放在最前面，优先匹配）
+    const notHitResult = parseNotHit(line);
+    if (notHitResult) return notHitResult;
+
+    // 检测二中二/三中三
     const erSanResult = parseErSan(line);
     if (erSanResult) return erSanResult;
 
@@ -814,6 +910,11 @@ function calcBetWin(bet, result) {
     const openWaves = result.waves || [];
     const teMa = openCodes.length > 0 ? openCodes[openCodes.length - 1] : null;
     const allCodes = openCodes;
+
+    // 检测五不中/十不中
+    if (bet.type === 'not_hit_5' || bet.type === 'not_hit_10') {
+        return calcNotHitWin(bet, result);
+    }
 
     // 检测二中二/三中三
     if (bet.type === 'erzhonger' || bet.type === 'sanzhongsan') {
@@ -1169,7 +1270,7 @@ function calcBets() {
     document.getElementById('countDisplay').textContent = '共 ' + history.length + ' 条';
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
-        if (/各/.test(line) && /^[\d，,、.\s]+各\d+$/.test(line.replace(/\s/g, ''))) {
+        if (/各/.test(line) && /^[\d，,.\s]+各\d+$/.test(line.replace(/\s/g, ''))) {
             return line.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '，');
         }
         return line;
