@@ -56,6 +56,7 @@ jobs:
 
       - name: Create MainActivity.java
         run: |
+          mkdir -p app/src/main/java/com/jisuanqi/app
           cat > app/src/main/java/com/jisuanqi/app/MainActivity.java << 'EOF'
           package com.jisuanqi.app;
           import android.os.Bundle;
@@ -125,23 +126,26 @@ jobs:
       - name: Create settings.gradle
         run: echo "include ':app'" > settings.gradle
 
-      - name: Create gradle-wrapper.properties
+      - name: Create gradle wrapper
         run: |
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
           EOF
+          echo "gradle wrapper created"
 
-      - name: Generate gradlew wrapper
+      - name: Setup gradlew
         run: |
-          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar -O gradle/wrapper/gradle-wrapper.jar
-          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew -O gradlew
-          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew.bat -O gradlew.bat
-          chmod +x gradlew
+          # 使用 gradle 自带的 wrapper 任务生成
+          gradle wrapper --gradle-version 8.2 || echo "gradle wrapper failed, trying alternative"
+          chmod +x gradlew || true
 
-      - name: Build Release APK
-        run: ./gradlew assembleRelease --no-daemon
+      - name: Build APK
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease --no-daemon --stacktrace
 
       - name: Upload APK
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: app-release
