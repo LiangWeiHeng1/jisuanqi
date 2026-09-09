@@ -27,6 +27,14 @@ jobs:
           mkdir -p app/src/main/res/mipmap-hdpi
           cp index.html app/src/main/assets/
 
+      - name: Create gradle.properties
+        run: |
+          cat > gradle.properties << 'EOF'
+          android.useAndroidX=true
+          android.enableJetifier=true
+          org.gradle.jvmargs=-Xmx2048m
+          EOF
+
       - name: Create AndroidManifest.xml
         run: |
           cat > app/src/main/AndroidManifest.xml << 'EOF'
