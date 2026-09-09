@@ -21,11 +21,13 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Android project
+      - name: Create Android project structure
         run: |
           mkdir -p app/src/main/assets
           mkdir -p app/src/main/res/layout
           mkdir -p app/src/main/res/values
+          mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p gradle/wrapper
           cp index.html app/src/main/assets/
 
       - name: Create AndroidManifest.xml
@@ -54,7 +56,6 @@ jobs:
 
       - name: Create MainActivity.java
         run: |
-          mkdir -p app/src/main/java/com/jisuanqi/app
           cat > app/src/main/java/com/jisuanqi/app/MainActivity.java << 'EOF'
           package com.jisuanqi.app;
           import android.os.Bundle;
@@ -76,25 +77,33 @@ jobs:
           }
           EOF
 
-      - name: Create build.gradle
+      - name: Create build.gradle (root)
         run: |
           cat > build.gradle << 'EOF'
           buildscript {
-              repositories { google(); mavenCentral() }
-              dependencies { classpath 'com.android.tools.build:gradle:8.1.0' }
+              repositories {
+                  google()
+                  mavenCentral()
+              }
+              dependencies {
+                  classpath 'com.android.tools.build:gradle:8.1.0'
+              }
           }
           allprojects {
-              repositories { google(); mavenCentral() }
+              repositories {
+                  google()
+                  mavenCentral()
+              }
           }
           EOF
 
       - name: Create app/build.gradle
         run: |
           cat > app/build.gradle << 'EOF'
-          plugins { id 'com.android.application' }
+          apply plugin: 'com.android.application'
           android {
-              namespace 'com.jisuanqi.app'
               compileSdk 34
+              namespace 'com.jisuanqi.app'
               defaultConfig {
                   applicationId 'com.jisuanqi.app'
                   minSdk 21
@@ -102,7 +111,11 @@ jobs:
                   versionCode 1
                   versionName '1.0'
               }
-              buildTypes { release { minifyEnabled false } }
+              buildTypes {
+                  release {
+                      minifyEnabled false
+                  }
+              }
           }
           dependencies {
               implementation 'androidx.appcompat:appcompat:1.6.1'
@@ -112,18 +125,21 @@ jobs:
       - name: Create settings.gradle
         run: echo "include ':app'" > settings.gradle
 
-      - name: Create gradle wrapper
+      - name: Create gradle-wrapper.properties
         run: |
-          mkdir -p gradle/wrapper
-          echo "distributionUrl=https\\://services.gradle.org/distributions/gradle-8.2-bin.zip" > gradle/wrapper/gradle-wrapper.properties
+          cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
+          distributionUrl=https\://services.gradle.org/distributions/gradle-8.2-bin.zip
+          EOF
 
-      - name: Grant execute permission
-        run: chmod +x gradlew || true
-
-      - name: Build APK
+      - name: Generate gradlew wrapper
         run: |
-          ./gradlew assembleRelease || true
-          find . -name "*.apk" -exec ls -la {} \;
+          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradle/wrapper/gradle-wrapper.jar -O gradle/wrapper/gradle-wrapper.jar
+          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew -O gradlew
+          wget -q https://raw.githubusercontent.com/gradle/gradle/v8.2.0/gradlew.bat -O gradlew.bat
+          chmod +x gradlew
+
+      - name: Build Release APK
+        run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
         uses: actions/upload-artifact@v4
