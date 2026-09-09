@@ -21,11 +21,43 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Create Android project structure
+      - name: Create Android project
         run: |
           mkdir -p app/src/main/assets
           mkdir -p app/src/main/res/mipmap-hdpi
+          mkdir -p app/src/main/res/mipmap-mdpi
+          mkdir -p app/src/main/res/mipmap-xhdpi
+          mkdir -p app/src/main/res/mipmap-xxhdpi
+          mkdir -p app/src/main/res/mipmap-xxxhdpi
+          mkdir -p gradle/wrapper
           cp index.html app/src/main/assets/
+
+      - name: Setup icon (auto-resize)
+        run: |
+          # 检查是否有自定义图标
+          if [ -f "icon.png" ] || [ -f "icon.jpg" ] || [ -f "icon.jpeg" ]; then
+            ICON_FILE=$(ls icon.png icon.jpg icon.jpeg 2>/dev/null | head -n 1)
+            echo "使用图标: $ICON_FILE"
+            
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+            
+            # 自动缩放到 Android 所需尺寸
+            convert $ICON_FILE -resize 48x48! app/src/main/res/mipmap-mdpi/ic_launcher.png
+            convert $ICON_FILE -resize 72x72! app/src/main/res/mipmap-hdpi/ic_launcher.png
+            convert $ICON_FILE -resize 96x96! app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            convert $ICON_FILE -resize 144x144! app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            convert $ICON_FILE -resize 192x192! app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+            
+            echo "✅ 图标已自动缩放到所有尺寸"
+          else
+            echo "⚠️ 未找到图标，使用默认占位"
+            echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
+            cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher.png
+            cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher.png
+            cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxhdpi/ic_launcher.png
+            cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
+          fi
 
       - name: Create gradle.properties
         run: |
@@ -152,7 +184,6 @@ jobs:
 
       - name: Create gradle wrapper
         run: |
-          mkdir -p gradle/wrapper
           cat > gradle/wrapper/gradle-wrapper.properties << 'EOF'
           distributionUrl=https\://services.gradle.org/distributions/gradle-8.0-bin.zip
           EOF
