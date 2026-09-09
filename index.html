@@ -1317,6 +1317,7 @@ function autoResizeInput() {
 }
 
 function pasteAndAppend() {
+    // 优先使用 Android 注入接口 (APK专用)
     if (window.AndroidClipboard && window.AndroidClipboard.getText) {
         try {
             var text = window.AndroidClipboard.getText();
@@ -1332,6 +1333,8 @@ function pasteAndAppend() {
             }
         } catch (e) {}
     }
+
+    // 网页版用 navigator.clipboard
     if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText().then(function(text) {
             if (text && text.trim()) {
