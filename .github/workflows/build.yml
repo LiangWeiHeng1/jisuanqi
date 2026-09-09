@@ -32,26 +32,18 @@ jobs:
           mkdir -p gradle/wrapper
           cp index.html app/src/main/assets/
 
-      - name: Setup icon (auto-resize)
+      - name: Setup icon
         run: |
-          # 检查是否有自定义图标
           if [ -f "icon.png" ] || [ -f "icon.jpg" ] || [ -f "icon.jpeg" ]; then
             ICON_FILE=$(ls icon.png icon.jpg icon.jpeg 2>/dev/null | head -n 1)
-            echo "使用图标: $ICON_FILE"
-            
             sudo apt-get update
             sudo apt-get install -y imagemagick
-            
-            # 自动缩放到 Android 所需尺寸
             convert $ICON_FILE -resize 48x48! app/src/main/res/mipmap-mdpi/ic_launcher.png
             convert $ICON_FILE -resize 72x72! app/src/main/res/mipmap-hdpi/ic_launcher.png
             convert $ICON_FILE -resize 96x96! app/src/main/res/mipmap-xhdpi/ic_launcher.png
             convert $ICON_FILE -resize 144x144! app/src/main/res/mipmap-xxhdpi/ic_launcher.png
             convert $ICON_FILE -resize 192x192! app/src/main/res/mipmap-xxxhdpi/ic_launcher.png
-            
-            echo "✅ 图标已自动缩放到所有尺寸"
           else
-            echo "⚠️ 未找到图标，使用默认占位"
             echo "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==" | base64 -d > app/src/main/res/mipmap-hdpi/ic_launcher.png
             cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-mdpi/ic_launcher.png
             cp app/src/main/res/mipmap-hdpi/ic_launcher.png app/src/main/res/mipmap-xhdpi/ic_launcher.png
@@ -154,6 +146,7 @@ jobs:
               buildTypes {
                   release {
                       minifyEnabled false
+                      signingConfig signingConfigs.debug
                   }
               }
           }
@@ -194,7 +187,7 @@ jobs:
           wget -q https://raw.githubusercontent.com/gradle/gradle/v8.0.0/gradlew -O gradlew
           chmod +x gradlew
 
-      - name: Build APK
+      - name: Build and sign APK
         run: ./gradlew assembleRelease --no-daemon
 
       - name: Upload APK
