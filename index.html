@@ -119,48 +119,90 @@
     var END_SEC = 30;        // 结束秒数（精确到秒）
     // ═══════════════════════════════════════════════════════════════
 
-    function checkShowLive() {
-        var now = new Date();
-        var totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-        
-        var startSec = START_HOUR * 3600 + START_MIN * 60 + START_SEC;
-        var endSec = END_HOUR * 3600 + END_MIN * 60 + END_SEC;
-        
-        var isLiveTime = false;
-        
-        if (startSec > endSec) {
-            // 跨天：例如 23:26:00 ~ 次日 21:35:00
-            if (totalSec >= startSec || totalSec < endSec) {
-                isLiveTime = true;
-            }
-        } else if (startSec < endSec) {
-            // 不跨天：例如 21:33:00 ~ 21:35:00
-            if (totalSec >= startSec && totalSec < endSec) {
-                isLiveTime = true;
-            }
+function checkShowLive() {
+    var now = new Date();
+    var totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
+    
+    var startSec = START_HOUR * 3600 + START_MIN * 60 + START_SEC;
+    var endSec = END_HOUR * 3600 + END_MIN * 60 + END_SEC;
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 预加载：在开播前 30 秒开始加载 iframe（但保持隐藏）
+    // ═══════════════════════════════════════════════════════════════
+    var preloadStartSec = startSec - 60;  // 提前 30 秒开始预加载
+    
+    var isLiveTime = false;
+    var isPreloadTime = false;
+    
+    // 判断是否在预加载时间范围内
+    if (totalSec >= preloadStartSec && totalSec < startSec) {
+        isPreloadTime = true;
+    }
+    
+    // 判断是否在直播时间范围内
+    if (startSec > endSec) {
+        if (totalSec >= startSec || totalSec < endSec) {
+            isLiveTime = true;
         }
-        // 如果 startSec === endSec，永远不显示
+    } else if (startSec < endSec) {
+        if (totalSec >= startSec && totalSec < endSec) {
+            isLiveTime = true;
+        }
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 预加载阶段：iframe 加载但不可见
+    // ═══════════════════════════════════════════════════════════════
+    if (isPreloadTime) {
+        // 显示 iframe（但隐藏），触发浏览器加载
+        iframe.style.display = 'block';
+        iframe.style.opacity = '0';
+        iframe.style.height = '0';
+        iframe.style.pointerEvents = 'none';
+        iframe.style.position = 'absolute';  // 不占用布局空间
+        iframe.style.overflow = 'hidden';
+        
+        placeholder.style.display = 'none';
+        
+        // 如果 iframe 还没加载，重新设置 src 触发加载
+        if (!iframe.dataset.loaded) {
+            iframe.src = iframe.src;  // 重新设置 src 触发加载
+            iframe.dataset.loaded = 'true';
+            console.log('🔄 直播 iframe 预加载中...');
+        }
+        return;
+    }
+    
+    // ═══════════════════════════════════════════════════════════════
+    // 直播阶段：显示 iframe
+    // ═══════════════════════════════════════════════════════════════
+    if (isLiveTime) {
+        iframe.style.display = 'block';
+        iframe.style.opacity = '1';
+        iframe.style.height = (wrapper.clientWidth * 0.6) + 'px';
+        iframe.style.pointerEvents = 'auto';
+        iframe.style.position = 'relative';
+        placeholder.style.display = 'none';
+        
+        if (!liveStarted) {
+            liveStarted = true;
+            resize();
+            console.log('📺 直播已开始，显示 iframe');
+        }
+    } else {
+        // ═══════════════════════════════════════════════════════════
+        // 非直播时间：显示占位图
+        // ═══════════════════════════════════════════════════════════
+        iframe.style.display = 'none';
+        placeholder.style.display = 'flex';
+        
+        if (liveStarted) {
+            liveStarted = false;
+        }
+        placeholderTitle.textContent = '🎰 搅珠直播';
+        placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
+    }
 
-        if (isLiveTime) {
-            iframe.style.display = 'block';
-            placeholder.style.display = 'none';
-            if (!liveStarted) {
-                liveStarted = true;
-                resize();
-            }
-        } else {
-            iframe.style.display = 'none';
-            placeholder.style.display = 'flex';
-            
-            if (liveStarted) {
-                liveStarted = false;
-                placeholderTitle.textContent = '🎰 搅珠直播';
-                placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
-            } else {
-                placeholderTitle.textContent = '🎰 搅珠直播';
-                placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
-            }
-        }
     }
 
     checkShowLive();
@@ -611,7 +653,7 @@ function parseBet(line) {
     line = line.trim();
     if (!line) return null;
     const originalLine = line;
-    const ignoreChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元', '米'];
+    const ignoreChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','特码', '门','米'];
     for (const ch of ignoreChars) {
         line = line.replaceAll(ch, '');
     }
@@ -1100,7 +1142,7 @@ function calcBets() {
 
     const mergedLines = [];
     let pendingNumbers = [];
-
+window._missingGeShown = false;
     for (let i = 0; i < cleanedLines.length; i++) {
         let line = cleanedLines[i].trim();
 
@@ -1115,25 +1157,32 @@ function calcBets() {
                 pendingNumbers.push(...nums);
             }
         } else {
-            if (pendingNumbers.length > 0 && hasGe) {
-                let mergedLine = pendingNumbers.join('，') + '，' + line;
-                mergedLine = mergedLine.replace(/各+/g, '各');
-                mergedLines.push(mergedLine);
-                pendingNumbers = [];
-            } else {
-                if (pendingNumbers.length > 0) {
-                    mergedLines.push(pendingNumbers.join('，') + '（缺少各）');
-                    pendingNumbers = [];
-                }
-                line = line.replace(/各+/g, '各');
-                mergedLines.push(line);
-            }
+if (pendingNumbers.length > 0 && hasGe) {
+    let mergedLine = pendingNumbers.join('，') + '，' + line;
+    mergedLine = mergedLine.replace(/各+/g, '各');
+    mergedLines.push(mergedLine);
+    pendingNumbers = [];
+} else {
+    if (pendingNumbers.length > 0) {
+        // 只添加一次"缺少各"提示，且只显示一次
+        if (!window._missingGeShown) {
+            mergedLines.push(pendingNumbers.join('，') + '（缺少各）');
+            window._missingGeShown = true;
+        }
+        pendingNumbers = [];
+    }
+    line = line.replace(/各+/g, '各');
+    mergedLines.push(line);
+}
         }
     }
 
-    if (pendingNumbers.length > 0) {
+if (pendingNumbers.length > 0) {
+    if (!window._missingGeShown) {
         mergedLines.push(pendingNumbers.join('，') + '（缺少各）');
+        window._missingGeShown = true;
     }
+}
 
     const lines = mergedLines;
     history = [];
@@ -1143,7 +1192,7 @@ function calcBets() {
     const result = getLotteryResult();
 
     for (const line of lines) {
-        let cleanedLine = line.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '，');
+        let cleanedLine = line.replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
         const bet = parseBet(cleanedLine);
         if (bet) {
             if (bet.type === 'error') {
@@ -1271,7 +1320,7 @@ function calcBets() {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
         if (/各/.test(line) && /^[\d，,.\s]+各\d+$/.test(line.replace(/\s/g, ''))) {
-            return line.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '，');
+            return line.replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
         }
         return line;
     });
