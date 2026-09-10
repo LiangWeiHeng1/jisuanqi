@@ -212,10 +212,10 @@ function checkShowLive() {
     </script>
 
     <div class="water-rate-row">
-        <label for="waterRate">💧 水钱百分比：</label>
+        <label for="waterRate">💧 水：</label>
         <input type="number" id="waterRate" value="3" min="0" max="100" step="0.1">
         <span class="rate-unit">%</span>
-        <span style="font-size:12px;color:#8895aa;margin-left:4px;">(投注金额 × 百分比)</span>
+
     </div>
     <div class="input-area">
         <textarea id="betInput"></textarea>
@@ -1131,7 +1131,7 @@ function calcBets() {
     const input = document.getElementById('betInput');
     const rawLines = input.value.split('\n').filter(l => l.trim());
 
-    const removeChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元', '数', '米'];
+    const removeChars = ['特码', '奥','特','码', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元', '数'];
     const cleanedLines = rawLines.map(line => {
         let newLine = line;
         for (const ch of removeChars) {
@@ -1256,16 +1256,16 @@ if (pendingNumbers.length > 0) {
             const totalSpecialBetAmount = specialPriceParts.reduce((sum, p) => sum + p, 0);
             html += '<div>' + priceStr + '=' + totalSpecialBetAmount + '×47倍=' + Math.round(specialWin) + '</div>';
         } else if (specialWin > 0) {
-            html += '<div>特码中奖：' + Math.round(specialWin) + '</div>';
+            html += '<div>特中：' + Math.round(specialWin) + '</div>';
         } else {
-            html += '<div>特码中奖：0</div>';
+            html += '<div>特中：0</div>';
         }
 
         if (otherWin > 0) {
             const otherStr = otherWinParts.length > 0 ? otherWinParts.join('+') : String(otherWin);
-            html += '<div>其他中奖：' + otherStr + '=' + Math.round(otherWin) + '</div>';
+            html += '<div>其他中：' + otherStr + '=' + Math.round(otherWin) + '</div>';
         } else {
-            html += '<div>其他中奖：0</div>';
+            html += '<div>其他中：0</div>';
         }
 
         const profit = totalWin + shuiQian - total;
@@ -1319,7 +1319,7 @@ if (pendingNumbers.length > 0) {
     document.getElementById('countDisplay').textContent = '共 ' + history.length + ' 条';
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
-        if (/各/.test(line) && /^[\d，,.\s]+各\d+$/.test(line.replace(/\s/g, ''))) {
+        if (/各/.test(line)) {
             return line.replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
         }
         return line;
