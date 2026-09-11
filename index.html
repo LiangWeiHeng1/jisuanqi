@@ -555,41 +555,31 @@ function calcErSanWin(bet, result) {
 function parseCombo(line) {
     let comboList = [];
     
-    // ================================================================
-    // 1. 提取连码部分：支持所有格式
-    //    支持：2连、3连、23连、234连、2345连
-    //         二连、三连、二三连、二三四连
-    //         2有、3友、23有、23友、234有、234友、2345有、2345友
-    // ================================================================
-    const comboPartMatch = line.match(/([2-5二三四五]+)(?:连|有|友)/);
-    if (!comboPartMatch) return null;
+    // ⭐ 第1处：加 g 标志，匹配所有连码
+    const allComboMatches = line.match(/([2-5二三四五]+)(?:连|有|友)/g);
+    if (!allComboMatches || allComboMatches.length === 0) return null;
     
-    const comboStr = comboPartMatch[1];
-    
-    // 解析连码字符串
-    for (const ch of comboStr) {
-        if (COMBO_MAP[ch]) {
-            const k = COMBO_MAP[ch];
-            if (!comboList.includes(k)) comboList.push(k);
-        } else {
-            const k = parseInt(ch);
-            if (k >= 2 && k <= 5 && !comboList.includes(k)) comboList.push(k);
+    for (const match of allComboMatches) {
+        const comboStr = match.replace(/(?:连|有|友)/, '');
+        for (const ch of comboStr) {
+            if (COMBO_MAP[ch]) {
+                const k = COMBO_MAP[ch];
+                if (!comboList.includes(k)) comboList.push(k);
+            } else {
+                const k = parseInt(ch);
+                if (k >= 2 && k <= 5 && !comboList.includes(k)) comboList.push(k);
+            }
         }
     }
     
     if (comboList.length === 0) return null;
     
-    // ================================================================
-    // 2. 提取金额（末尾数字）
-    // ================================================================
     let amtStr = '';
     const amtMatch = line.match(/(\d+)$/);
     if (amtMatch) { amtStr = amtMatch[1]; }
     
-    // ================================================================
-    // 3. 去掉连码部分和金额，提取尾数或生肖
-    // ================================================================
-    let remainPart = line.replace(/([2-5二三四五]+)(?:连|有|友)/, '');
+    // ⭐ 第2处：加 g 标志，去掉所有连码
+    let remainPart = line.replace(/([2-5二三四五]+)(?:连|有|友)/g, '');
     remainPart = remainPart.replace(/(\d+)$/, '');
     remainPart = remainPart.replace(/尾/g, '');
     remainPart = remainPart.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '');
@@ -597,13 +587,11 @@ function parseCombo(line) {
     let items = [];
     let itemType = '';
     
-    // 检查是否有生肖
     const zodiacItems = remainPart.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g);
     if (zodiacItems && zodiacItems.length > 0) {
         items = zodiacItems;
         itemType = '生肖';
     } else {
-        // 检查是否有尾数（支持小写数字和中文数字）
         const tailNums = remainPart.match(/[\d一二三四五六七八九零]+/g);
         if (tailNums && tailNums.length > 0) {
             let tailArr = [];
@@ -625,9 +613,6 @@ function parseCombo(line) {
     
     if (items.length === 0) return null;
     
-    // ================================================================
-    // 4. 计算组合数和总投注额
-    // ================================================================
     const n = items.length;
     let unitPrice = 1;
     if (amtStr) { unitPrice = parseInt(amtStr); }
@@ -652,6 +637,8 @@ function parseCombo(line) {
         raw: line
     };
 }
+
+
 function parseSpecial(line) {
     const match = line.match(/^(红单|红双|绿单|绿双|蓝单|蓝双|单|双|大|小|红|绿|蓝)(?:各|各数|各号|各码)?\s*(\d+)/);
     if (!match) return null;
