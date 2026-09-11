@@ -554,53 +554,86 @@ function calcErSanWin(bet, result) {
 
 function parseCombo(line) {
     let comboList = [];
-    const comboRegex = /([二三四五])(?:连|有|友)/g;
-    let cm;
-    while ((cm = comboRegex.exec(line)) !== null) {
-        const k = COMBO_MAP[cm[1]];
-        if (k && !comboList.includes(k)) comboList.push(k);
-    }
-    const chars = line.match(/[二三四五]/g);
-    if (chars) {
-        for (const ch of chars) {
+    
+    // ================================================================
+    // 1. 提取连码部分：支持所有格式
+    //    支持：2连、3连、23连、234连、2345连
+    //         二连、三连、二三连、二三四连
+    //         2有、3友、23有、23友、234有、234友、2345有、2345友
+    // ================================================================
+    const comboPartMatch = line.match(/([2-5二三四五]+)(?:连|有|友)/);
+    if (!comboPartMatch) return null;
+    
+    const comboStr = comboPartMatch[1];
+    
+    // 解析连码字符串
+    for (const ch of comboStr) {
+        if (COMBO_MAP[ch]) {
             const k = COMBO_MAP[ch];
-            if (k && !comboList.includes(k)) comboList.push(k);
+            if (!comboList.includes(k)) comboList.push(k);
+        } else {
+            const k = parseInt(ch);
+            if (k >= 2 && k <= 5 && !comboList.includes(k)) comboList.push(k);
         }
     }
+    
     if (comboList.length === 0) return null;
-
+    
+    // ================================================================
+    // 2. 提取金额（末尾数字）
+    // ================================================================
     let amtStr = '';
     const amtMatch = line.match(/(\d+)$/);
     if (amtMatch) { amtStr = amtMatch[1]; }
-
+    
+    // ================================================================
+    // 3. 去掉连码部分和金额，提取尾数或生肖
+    // ================================================================
+    let remainPart = line.replace(/([2-5二三四五]+)(?:连|有|友)/, '');
+    remainPart = remainPart.replace(/(\d+)$/, '');
+    remainPart = remainPart.replace(/尾/g, '');
+    remainPart = remainPart.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '');
+    
     let items = [];
     let itemType = '';
-    const zodiacItems = line.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g);
+    
+    // 检查是否有生肖
+    const zodiacItems = remainPart.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g);
     if (zodiacItems && zodiacItems.length > 0) {
         items = zodiacItems;
         itemType = '生肖';
     } else {
-        let tailMatch = line.match(/(\d+)尾/);
-        if (!tailMatch) { tailMatch = line.match(/尾(\d+)/); }
-        if (tailMatch) {
-            let tailStr = tailMatch[1];
-            if (amtStr && tailStr.endsWith(amtStr) && tailStr.length > amtStr.length) {
-                tailStr = tailStr.slice(0, -amtStr.length);
+        // 检查是否有尾数（支持小写数字和中文数字）
+        const tailNums = remainPart.match(/[\d一二三四五六七八九零]+/g);
+        if (tailNums && tailNums.length > 0) {
+            let tailArr = [];
+            const cnMap = { '零': 0, '一': 1, '二': 2, '三': 3, '四': 4, '五': 5, '六': 6, '七': 7, '八': 8, '九': 9 };
+            for (const numStr of tailNums) {
+                for (const ch of numStr) {
+                    if (cnMap[ch] !== undefined) {
+                        tailArr.push(cnMap[ch]);
+                    } else {
+                        const d = parseInt(ch);
+                        if (!isNaN(d)) tailArr.push(d);
+                    }
+                }
             }
-            if (tailStr.length > 0) {
-                items = tailStr.split('').map(Number);
-                itemType = '尾数';
-            }
+            items = tailArr;
+            itemType = '尾数';
         }
     }
+    
     if (items.length === 0) return null;
-
+    
+    // ================================================================
+    // 4. 计算组合数和总投注额
+    // ================================================================
     const n = items.length;
     let unitPrice = 1;
     if (amtStr) { unitPrice = parseInt(amtStr); }
     const validCombos = comboList.filter(k => k <= n);
     if (validCombos.length === 0) return null;
-
+    
     let totalGroups = 0;
     let detailParts = [];
     for (const k of validCombos) {
@@ -619,7 +652,6 @@ function parseCombo(line) {
         raw: line
     };
 }
-
 function parseSpecial(line) {
     const match = line.match(/^(红单|红双|绿单|绿双|蓝单|蓝双|单|双|大|小|红|绿|蓝)(?:各|各数|各号|各码)?\s*(\d+)/);
     if (!match) return null;
