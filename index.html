@@ -1518,24 +1518,40 @@ function displayNumbersOneByOne(codes, waves, zodiacs, period, openTime) {
     lotteryDateEl.textContent = '📅 ' + dateStr;
     lotteryPeriodEl.textContent = period ? period.replace('2026', '') + '期' : '';
     lotteryNumbersEl.innerHTML = '';
+
     const items = [];
     for (let i = 0; i < 6; i++) {
         items.push({ num: codes[i] || '--', zodiac: zodiacs[i] || '--', wave: waves[i] || 'blue', isSpecial: false });
     }
     items.push({ num: codes[6] || '--', zodiac: zodiacs[6] || '--', wave: waves[6] || 'blue', isSpecial: true });
-    let index = 0;
-    const interval = setInterval(function() {
-        if (index >= items.length) { clearInterval(interval); calcBets(); return; }
-        const item = items[index];
+
+    // 先一次性把 7 个盒子全建好，先隐藏（占位，不重排）
+    const boxes = [];
+    for (let i = 0; i < items.length; i++) {
+        const item = items[i];
         if (item.isSpecial) {
             const label = document.createElement('div');
             label.className = 'special-label';
             label.textContent = '特码';
             lotteryNumbersEl.appendChild(label);
         }
-        lotteryNumbersEl.appendChild(createNumberBox(item.num, item.zodiac, item.wave, false));
+        const box = createNumberBox(item.num, item.zodiac, item.wave, false);
+        box.style.visibility = 'hidden';
+        lotteryNumbersEl.appendChild(box);
+        boxes.push(box);
+    }
+
+    // 逐个显示，只改 visibility，不新增元素、不重排、不闪烁
+    let index = 0;
+    const interval = setInterval(function() {
+        if (index >= boxes.length) {
+            clearInterval(interval);
+            calcBets();
+            return;
+        }
+        boxes[index].style.visibility = 'visible';
         index++;
-    }, 350);
+    }, 0);
 }
 
 async function fetchAndDisplayLottery(force, skipAnimation) {
