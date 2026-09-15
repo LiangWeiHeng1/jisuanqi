@@ -1201,15 +1201,23 @@ for (let i = 0; i < cleanedLines.length; i++) {
 
     line = line.replaceAll('号', '各');
 
-    const isPureNumber = /^[\d，,、.\s]+$/.test(line);
+const isPureNumber = /^[\d，,、.\s]+$/.test(line);
+// 判断：行里只有数字和"各"（如 "各80" 或 "11.12.21.22各50"）
+const isNumberWithGe = /^[\d，,、.\s]*各[\d，,、.\s]*$/.test(line);
 
     if (isPureNumber) {
         const nums = line.match(/\d+/g);
         if (nums && nums.length > 0) {
             pendingNumbers.push(...nums);
         }
+    } else if (isNumberWithGe && pendingNumbers.length > 0) {
+        // 纯数字 + 数字+各 → 合并
+        let mergedLine = pendingNumbers.join('，') + '，' + line;
+        mergedLine = mergedLine.replace(/各+/g, '各');
+        mergedLines.push(mergedLine);
+        pendingNumbers = [];
     } else {
-        // 非纯数字行，先清空 pendingNumbers
+        // 其他行，先清空 pendingNumbers
         if (pendingNumbers.length > 0) {
             if (!window._missingGeShown) {
                 mergedLines.push(pendingNumbers.join('，'));
@@ -1378,7 +1386,7 @@ if (abnormalHtml) {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
         if (/各/.test(line)) {
-            return line.replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
+return line.replace(/\+/g, '.').replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
         }
         return line;
     });
