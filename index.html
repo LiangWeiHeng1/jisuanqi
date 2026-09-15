@@ -671,6 +671,7 @@ function parseSpecial(line) {
     };
 }
 
+
 function parseBet(line) {
     line = line.trim();
     if (!line) return null;
@@ -681,6 +682,24 @@ function parseBet(line) {
     }
     line = line.replace(/\s+/g, ' ').trim();
     line = line.replace(/[：:]/g, '/');
+    // 生肖行检查
+    const chineseChars = line.match(/[\u4e00-\u9fa5]/g);
+    if (chineseChars) {
+        const correctZodiacs = '鼠牛虎兔龙蛇马羊猴鸡狗猪';
+        const hasZodiac = chineseChars.some(ch => correctZodiacs.includes(ch));
+        if (hasZodiac) {
+            const allowChars = '平各连有友二三四五';
+            const wrongChars = chineseChars.filter(ch => !correctZodiacs.includes(ch) && !allowChars.includes(ch));
+            if (wrongChars.length > 0) {
+                return {
+                    type: 'error',
+                    category: 'other',
+                    raw: originalLine,
+                    display: '❌ 生肖写错'
+                };
+            }
+        }
+    }
 
     // 先检测五不中/十不中（放在最前面，优先匹配）
     const notHitResult = parseNotHit(line);
@@ -737,7 +756,7 @@ function parseBet(line) {
     }
 
     if (/^(平特|平)/.test(line)) {
-        const fm = line.match(/^(平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(\d+)$/);
+        const fm = line.match(/^(平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?(\d+)$/);
         if (fm) {
             const zStr = fm[2];
             const amt = parseInt(fm[3]);
@@ -746,7 +765,7 @@ function parseBet(line) {
             return { type: 'pingte_zodiac', category: 'other', items: items, itemType: '生肖', unitPrice: amt, amount: total, display: items.length + '个生肖 × ' + amt + '元 = ' + total + '元', raw: originalLine };
         }
         let cleanLine = line.replace(/\s/g, '');
-        let tailMatch = cleanLine.match(/平特?(\d+)尾各?(\d+)$/);
+        let tailMatch = cleanLine.match(/平特?尾?(\d+)尾各?(\d+)$/);
         if (!tailMatch) { tailMatch = cleanLine.match(/平特?尾(\d+)各?(\d+)$/); }
         if (tailMatch) {
             const tailStr = tailMatch[1];
@@ -954,6 +973,18 @@ function parseBet(line) {
         const nums = ns.match(/\d+/g);
         if (nums && nums.length > 0) {
             const numbers = nums.map(Number);
+            
+            // 校验号码范围 1-49
+            const invalidNums = numbers.filter(n => n < 1 || n > 49);
+            if (invalidNums.length > 0) {
+                return {
+                    type: 'error',
+                    category: 'other',
+                    raw: line,
+                    display: '❌ 号码超出1-49范围：' + invalidNums.join('、')
+                };
+            }
+            
             const count = numbers.length;
             const total = count * price;
             return { type: 'expand', category: 'special', items: numbers, itemType: '号码', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
@@ -1165,43 +1196,35 @@ function calcBets() {
     const mergedLines = [];
     let pendingNumbers = [];
 window._missingGeShown = false;
-    for (let i = 0; i < cleanedLines.length; i++) {
-        let line = cleanedLines[i].trim();
+for (let i = 0; i < cleanedLines.length; i++) {
+    let line = cleanedLines[i].trim();
 
-        line = line.replaceAll('号', '各');
+    line = line.replaceAll('号', '各');
 
-        const isPureNumber = /^[\d，,、.\s]+$/.test(line);
-        const hasGe = /各/.test(line);
+    const isPureNumber = /^[\d，,、.\s]+$/.test(line);
 
-        if (isPureNumber) {
-            const nums = line.match(/\d+/g);
-            if (nums && nums.length > 0) {
-                pendingNumbers.push(...nums);
+    if (isPureNumber) {
+        const nums = line.match(/\d+/g);
+        if (nums && nums.length > 0) {
+            pendingNumbers.push(...nums);
+        }
+    } else {
+        // 非纯数字行，先清空 pendingNumbers
+        if (pendingNumbers.length > 0) {
+            if (!window._missingGeShown) {
+                mergedLines.push(pendingNumbers.join('，'));
+                window._missingGeShown = true;
             }
-        } else {
-if (pendingNumbers.length > 0 && hasGe) {
-    let mergedLine = pendingNumbers.join('，') + '，' + line;
-    mergedLine = mergedLine.replace(/各+/g, '各');
-    mergedLines.push(mergedLine);
-    pendingNumbers = [];
-} else {
-    if (pendingNumbers.length > 0) {
-        // 只添加一次"缺少各"提示，且只显示一次
-        if (!window._missingGeShown) {
-            mergedLines.push(pendingNumbers.join('，') + '（缺少各）');
-            window._missingGeShown = true;
+            pendingNumbers = [];
         }
-        pendingNumbers = [];
+        line = line.replace(/各+/g, '各');
+        mergedLines.push(line);
     }
-    line = line.replace(/各+/g, '各');
-    mergedLines.push(line);
 }
-        }
-    }
 
 if (pendingNumbers.length > 0) {
     if (!window._missingGeShown) {
-        mergedLines.push(pendingNumbers.join('，') + '（缺少各）');
+        mergedLines.push(pendingNumbers.join('，'));  // ← 去掉 （缺少各）
         window._missingGeShown = true;
     }
 }
@@ -1296,6 +1319,19 @@ if (pendingNumbers.length > 0) {
         const profitLabel = roundedProfit >= 0 ? '赢' : '输';
         html += '<div>' + Math.round(totalWin) + '+' + shuiQianDisplay + '-' + total + '=' + profitSign + Math.abs(roundedProfit) + profitLabel + '</div>';
 
+
+// 检查有异常的投注（未识别、简单平特需指定）
+let abnormalHtml = '';
+for (const bet of history) {
+    if (bet.type === 'error') {
+        abnormalHtml += '<div class="error">❌ ' + bet.raw + '：' + bet.display.replace('❌ ', '') + '</div>';
+    } else if (bet.winDetail && bet.winDetail.includes('简单平特需指定')) {
+        abnormalHtml += '<div class="error">❌ ' + bet.raw + '：简单平特需指定号码/生肖/尾数</div>';
+    }
+}
+if (abnormalHtml) {
+    html += abnormalHtml;
+}
         if (hasError) {
             html += '<div class="error">⚠️ 部分投注未识别，请检查格式</div>';
         }
