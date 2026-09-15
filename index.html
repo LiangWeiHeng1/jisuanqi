@@ -103,136 +103,28 @@
 </div>
 
 
-    <div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
-        <iframe id="liveIframe" src="https://v.jscdns.app:8088/indexa.html?type=amo" style="width:100%;border:none;display:block;display:none;" allowfullscreen loading="lazy"></iframe>
-        <div id="livePlaceholder" style="padding:30px 20px;background:linear-gradient(135deg, #f8f9fb, #eef1f5);text-align:center;border:1px solid #e2e6ea;border-radius:12px;min-height:180px;display:flex;flex-direction:column;align-items:center;justify-content:center;">
-            <div id="placeholderTitle" style="font-size:18px;font-weight:600;color:#1a2332;margin-bottom:8px;">🎰 搅珠直播</div>
-            <div id="placeholderDesc" style="font-size:15px;color:#4a5a72;">开播时间为晚上 21:33（北京时间），敬请查看</div>
-        </div>
-    </div>
+<!-- 直播切换按钮 -->
+<div style="max-width:720px;margin:0 auto 8px;display:flex;gap:8px;">
+    <button id="liveTabMO" class="live-tab active" style="flex:1;padding:8px;border:1px solid #4f7cff;background:#4f7cff;color:#fff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">新澳直播</button>
+    <button id="liveTabHK" class="live-tab" style="flex:1;padding:8px;border:1px solid #4f7cff;background:#fff;color:#4f7cff;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">香港直播</button>
+</div>
+
+<!-- 新澳直播 -->
+<div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
+    <iframe id="liveIframe" src="https://v.jscdns.app:8088/index.html?type=amo" style="width:100%;height:100px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
+</div>
+
+<!-- 香港直播（默认隐藏） -->
+<div id="liveWrapperHK" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;display:none;">
+    <iframe id="liveIframeHK" src="https://v.jscdns.app:8088/index.html?type=hhk" style="width:100%;height:100px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
+</div>
+
     <script>
 // ================================================================
 // 直播控制（精确到秒）
 // ================================================================
 
-(function() {
-    var wrapper = document.getElementById('liveWrapper');
-    var iframe = document.getElementById('liveIframe');
-    var placeholder = document.getElementById('livePlaceholder');
-    var placeholderTitle = document.getElementById('placeholderTitle');
-    var placeholderDesc = document.getElementById('placeholderDesc');
-    
-    function resize() { 
-        var w = wrapper.clientWidth; 
-        iframe.style.height = (w * 0.6) + 'px'; 
-    }
-    window.addEventListener('resize', resize);
-    setTimeout(resize, 100);
 
-    var liveStarted = false;
-
-    // ═══════════════════════════════════════════════════════════════
-    // 在这里修改开播和结束时间（24小时制，精确到秒）
-    // ═══════════════════════════════════════════════════════════════
-    var START_HOUR = 21;    // 开播小时
-    var START_MIN = 32;     // 开播分钟
-    var START_SEC = 50;      // 开播秒数（精确到秒）
-    
-    var END_HOUR = 21;      // 结束小时（次日）
-    var END_MIN = 34;       // 结束分钟
-    var END_SEC = 30;        // 结束秒数（精确到秒）
-    // ═══════════════════════════════════════════════════════════════
-
-function checkShowLive() {
-    var now = new Date();
-    var totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    
-    var startSec = START_HOUR * 3600 + START_MIN * 60 + START_SEC;
-    var endSec = END_HOUR * 3600 + END_MIN * 60 + END_SEC;
-    
-    // ═══════════════════════════════════════════════════════════════
-    // 预加载：在开播前 30 秒开始加载 iframe（但保持隐藏）
-    // ═══════════════════════════════════════════════════════════════
-    var preloadStartSec = startSec - 60;  // 提前 30 秒开始预加载
-    
-    var isLiveTime = false;
-    var isPreloadTime = false;
-    
-    // 判断是否在预加载时间范围内
-    if (totalSec >= preloadStartSec && totalSec < startSec) {
-        isPreloadTime = true;
-    }
-    
-    // 判断是否在直播时间范围内
-    if (startSec > endSec) {
-        if (totalSec >= startSec || totalSec < endSec) {
-            isLiveTime = true;
-        }
-    } else if (startSec < endSec) {
-        if (totalSec >= startSec && totalSec < endSec) {
-            isLiveTime = true;
-        }
-    }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // 预加载阶段：iframe 加载但不可见
-    // ═══════════════════════════════════════════════════════════════
-    if (isPreloadTime) {
-        // 显示 iframe（但隐藏），触发浏览器加载
-        iframe.style.display = 'block';
-        iframe.style.opacity = '0';
-        iframe.style.height = '0';
-        iframe.style.pointerEvents = 'none';
-        iframe.style.position = 'absolute';  // 不占用布局空间
-        iframe.style.overflow = 'hidden';
-        
-        placeholder.style.display = 'none';
-        
-        // 如果 iframe 还没加载，重新设置 src 触发加载
-        if (!iframe.dataset.loaded) {
-            iframe.src = iframe.src;  // 重新设置 src 触发加载
-            iframe.dataset.loaded = 'true';
-            console.log('🔄 直播 iframe 预加载中...');
-        }
-        return;
-    }
-    
-    // ═══════════════════════════════════════════════════════════════
-    // 直播阶段：显示 iframe
-    // ═══════════════════════════════════════════════════════════════
-    if (isLiveTime) {
-        iframe.style.display = 'block';
-        iframe.style.opacity = '1';
-        iframe.style.height = (wrapper.clientWidth * 0.6) + 'px';
-        iframe.style.pointerEvents = 'auto';
-        iframe.style.position = 'relative';
-        placeholder.style.display = 'none';
-        
-        if (!liveStarted) {
-            liveStarted = true;
-            resize();
-            console.log('📺 直播已开始，显示 iframe');
-        }
-    } else {
-        // ═══════════════════════════════════════════════════════════
-        // 非直播时间：显示占位图
-        // ═══════════════════════════════════════════════════════════
-        iframe.style.display = 'none';
-        placeholder.style.display = 'flex';
-        
-        if (liveStarted) {
-            liveStarted = false;
-        }
-        placeholderTitle.textContent = '🎰 搅珠直播';
-        placeholderDesc.textContent = '开播时间为晚上 21:33（北京时间），敬请查看';
-    }
-
-    }
-
-    checkShowLive();
-    // 每秒检查一次，实现秒级精确控制
-    setInterval(checkShowLive, 1000);
-})();
     </script>
 
     <div class="water-rate-row">
@@ -1796,9 +1688,54 @@ function scheduler() {
 window.onload = function() {
     // ===== 香港 WebSocket 自动连接 =====
     connectHKWebSocket();
+    // ===== 监听 iframe 发来的高度 =====
+    window.addEventListener('message', function(e) {
+        var d = e.data;
+        if (!d || typeof d !== 'object') return;
+        if (d.type !== 'iframeHeight') return;
 
+        var h = parseInt(d.height);
+        if (!h || h < 100) return;
+
+        var moIframe = document.getElementById('liveIframe');
+        var hkIframe = document.getElementById('liveIframeHK');
+
+        if (moIframe && e.source === moIframe.contentWindow) {
+            moIframe.style.height = h + 'px';
+        }
+        if (hkIframe && e.source === hkIframe.contentWindow) {
+            hkIframe.style.height = h + 'px';
+        }
+    });
     // ===== 粘贴按钮 =====
     document.getElementById('pasteBtn').addEventListener('click', pasteAndAppend);
+
+    // ===== 直播切换 =====
+    var tabMO = document.getElementById('liveTabMO');
+    var tabHK = document.getElementById('liveTabHK');
+    var wrapMO = document.getElementById('liveWrapper');
+    var wrapHK = document.getElementById('liveWrapperHK');
+
+    function switchLive(type) {
+        if (type === 'mo') {
+            wrapMO.style.display = 'block';
+            wrapHK.style.display = 'none';
+            tabMO.style.background = '#4f7cff';
+            tabMO.style.color = '#fff';
+            tabHK.style.background = '#fff';
+            tabHK.style.color = '#4f7cff';
+        } else {
+            wrapMO.style.display = 'none';
+            wrapHK.style.display = 'block';
+            tabHK.style.background = '#4f7cff';
+            tabHK.style.color = '#fff';
+            tabMO.style.background = '#fff';
+            tabMO.style.color = '#4f7cff';
+        }
+    }
+
+    tabMO.addEventListener('click', function() { switchLive('mo'); });
+    tabHK.addEventListener('click', function() { switchLive('hk'); });
 
     // ===== 一键复制按钮 =====
     document.getElementById('copyInputBtn').addEventListener('click', function() {
