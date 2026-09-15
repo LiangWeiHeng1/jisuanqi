@@ -62,7 +62,21 @@
         .status-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: #8895aa; margin-top: 8px; }
         @media (max-width: 600px) { .container { padding: 12px 14px; } .btn { padding: 6px 14px; font-size: 13px; } .input-area textarea { min-height: 60px; font-size: 13px; } .number-box { width: 48px; height: 48px; border-radius: 10px; } .number-box .num { font-size: 16px; } .number-box .draw-txt { font-size: 10px; } .special-label { font-size: 12px; } .number-box.refresh-box .refresh-text { font-size: 12px; } .lottery-numbers { gap: 6px; } .lottery-row { gap: 8px; } .water-rate-row input[type="number"] { width: 60px; } }
         @media (max-width: 400px) { .number-box { width: 40px; height: 40px; border-radius: 8px; } .number-box .num { font-size: 13px; } .number-box .draw-txt { font-size: 8px; } .special-label { font-size: 10px; padding: 0 2px; } .number-box.refresh-box .refresh-text { font-size: 10px; } .lottery-numbers { gap: 4px; } }
-    </style>
+@media (max-width: 600px) {
+    .number-box { width: 42px !important; height: 42px !important; }
+    .number-box .num { font-size: 15px !important; }
+    .number-box .draw-txt { font-size: 9px !important; }
+    .number-box.refresh-box { width: 42px !important; height: 42px !important; }
+}
+@media (max-width: 400px) {
+    .number-box { width: 38px !important; height: 38px !important; }
+    .number-box .num { font-size: 13px !important; }
+    .number-box .draw-txt { font-size: 8px !important; }
+    .number-box.refresh-box { width: 38px !important; height: 38px !important; }
+}
+.lottery-numbers { flex-wrap: nowrap !important; gap: 4px !important; }
+.special-label { font-size: 11px !important; padding: 0 2px !important; }
+  </style>
 </head>
 <body>
 <div class="container">
@@ -72,14 +86,22 @@
             <span class="lottery-date" id="lotteryDate">📅 加载中...</span>
             <span class="lottery-period" id="lotteryPeriod"></span>
         </div>
-        <div class="lottery-row">
-            <div class="lottery-numbers" id="lotteryNumbers"></div>
-            <div class="number-box refresh-box" id="refreshLotteryBtn" style="flex-shrink:0;">
-                <div class="refresh-icon">🔄</div>
-                <div class="refresh-text">刷新</div>
-            </div>
-        </div>
+<div class="lottery-row">
+    <div class="lottery-numbers" id="lotteryNumbers"></div>
+</div>
     </div>
+<!-- 香港彩，只显示，不参与计算 -->
+<div class="lottery-info" id="lotteryInfoHK" style="margin-top:10px;">
+    <div class="lottery-header">
+        <span class="lottery-date" id="lotteryPeriodHK">香港彩</span>
+        <span class="lottery-period" id="lotteryDateHK"></span>
+    </div>
+<div class="lottery-row">
+    <div class="lottery-numbers" id="lotteryNumbersHK"></div>
+</div>
+    <div id="lotteryNextHK" style="font-size:12px;color:#4a5a72;margin-top:6px;"></div>
+</div>
+
 
     <div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
         <iframe id="liveIframe" src="https://v.jscdns.app:8088/indexa.html?type=amo" style="width:100%;border:none;display:block;display:none;" allowfullscreen loading="lazy"></iframe>
@@ -1524,15 +1546,47 @@ function createNumberBox(num, zodiac, wave, isPlaceholder) {
     return box;
 }
 
+function makeRefreshBtn(type) {
+    var btn = document.createElement('div');
+    btn.className = 'number-box refresh-box';
+    btn.innerHTML = '<div class="refresh-icon">🔄</div><div class="refresh-text">刷新</div>';
+
+    btn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        this.innerHTML = '<div class="refresh-icon">⏳</div><div class="refresh-text">加载</div>';
+        this.style.opacity = '0.6';
+        this.style.pointerEvents = 'none';
+        var self = this;
+
+        if (type === 'mo') {
+            // 新澳刷新：重新拉 API
+            fetchAndDisplayLottery(true, true).finally(function() {
+                self.innerHTML = '<div class="refresh-icon">🔄</div><div class="refresh-text">刷新</div>';
+                self.style.opacity = '1';
+                self.style.pointerEvents = 'auto';
+            });
+        } else {
+            // 香港刷新：重连 WebSocket
+            connectHKWebSocket();
+            setTimeout(function() {
+                self.innerHTML = '<div class="refresh-icon">🔄</div><div class="refresh-text">刷新</div>';
+                self.style.opacity = '1';
+                self.style.pointerEvents = 'auto';
+            }, 1500);
+        }
+    });
+
+    return btn;
+}
+
+
+
 function renderPlaceholders() {
     lotteryNumbersEl.innerHTML = '';
     for (let i = 0; i < 6; i++) {
         lotteryNumbersEl.appendChild(createNumberBox(null, null, null, true));
     }
-    const label = document.createElement('div');
-    label.className = 'special-label';
-    label.textContent = '特码';
-    lotteryNumbersEl.appendChild(label);
+    lotteryNumbersEl.appendChild(makeRefreshBtn('mo'));
     lotteryNumbersEl.appendChild(createNumberBox(null, null, null, true));
 }
 
@@ -1547,10 +1601,7 @@ function displayAllNumbers(codes, waves, zodiacs, period, openTime) {
         const waveColor = waves[i] || 'blue';
         lotteryNumbersEl.appendChild(createNumberBox(num, zodiacName, waveColor, false));
     }
-    const label = document.createElement('div');
-    label.className = 'special-label';
-    label.textContent = '特码';
-    lotteryNumbersEl.appendChild(label);
+    lotteryNumbersEl.appendChild(makeRefreshBtn('mo'));
     const specialNum = codes[6] || '--';
     const specialZodiac = zodiacs[6] || '--';
     const specialWave = waves[6] || 'blue';
@@ -1569,15 +1620,14 @@ function displayNumbersOneByOne(codes, waves, zodiacs, period, openTime) {
     }
     items.push({ num: codes[6] || '--', zodiac: zodiacs[6] || '--', wave: waves[6] || 'blue', isSpecial: true });
 
-    // 先一次性把 7 个盒子全建好，先隐藏（占位，不重排）
     const boxes = [];
     for (let i = 0; i < items.length; i++) {
         const item = items[i];
         if (item.isSpecial) {
-            const label = document.createElement('div');
-            label.className = 'special-label';
-            label.textContent = '特码';
-            lotteryNumbersEl.appendChild(label);
+            const btn = makeRefreshBtn('mo');
+            btn.style.visibility = 'hidden';
+            lotteryNumbersEl.appendChild(btn);
+            boxes.push(btn);
         }
         const box = createNumberBox(item.num, item.zodiac, item.wave, false);
         box.style.visibility = 'hidden';
@@ -1585,7 +1635,6 @@ function displayNumbersOneByOne(codes, waves, zodiacs, period, openTime) {
         boxes.push(box);
     }
 
-    // 逐个显示，只改 visibility，不新增元素、不重排、不闪烁
     let index = 0;
     const interval = setInterval(function() {
         if (index >= boxes.length) {
@@ -1743,44 +1792,38 @@ function scheduler() {
     }
 }
 
-window.onload = function() {
-    const lotteryRefreshBtn = document.getElementById('refreshLotteryBtn');
-    if (lotteryRefreshBtn) {
-        lotteryRefreshBtn.addEventListener('click', function(e) {
-            e.stopPropagation();
-            this.innerHTML = '<div class="refresh-icon">⏳</div><div class="refresh-text">加载</div>';
-            this.style.opacity = '0.6';
-            this.style.pointerEvents = 'none';
-            fetchAndDisplayLottery(true, true).finally(function() {
-                lotteryRefreshBtn.innerHTML = '<div class="refresh-icon">🔄</div><div class="refresh-text">刷新</div>';
-                lotteryRefreshBtn.style.opacity = '1';
-                lotteryRefreshBtn.style.pointerEvents = 'auto';
-            });
-        });
-    }
 
+window.onload = function() {
+    // ===== 香港 WebSocket 自动连接 =====
+    connectHKWebSocket();
+
+    // ===== 粘贴按钮 =====
     document.getElementById('pasteBtn').addEventListener('click', pasteAndAppend);
-document.getElementById('copyInputBtn').addEventListener('click', function() {
-    var text = document.getElementById('betInput').value;
-    if (!text || !text.trim()) {
-        alert('输入框为空，没有可复制的内容');
-        return;
-    }
-    var btn = this;
-    function done() {
-        btn.textContent = '✅ 已复制';
-        setTimeout(function() { btn.textContent = '📄 复制输入'; }, 1500);
-    }
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(done).catch(function() {
+
+    // ===== 一键复制按钮 =====
+    document.getElementById('copyInputBtn').addEventListener('click', function() {
+        var text = document.getElementById('betInput').value;
+        if (!text || !text.trim()) {
+            alert('输入框为空，没有可复制的内容');
+            return;
+        }
+        var btn = this;
+        function done() {
+            btn.textContent = '✅ 已复制';
+            setTimeout(function() { btn.textContent = '📄 复制输入'; }, 1500);
+        }
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(done).catch(function() {
+                fallbackCopy(text);
+                done();
+            });
+        } else {
             fallbackCopy(text);
             done();
-        });
-    } else {
-        fallbackCopy(text);
-        done();
-    }
-});
+        }
+    });
+
+    // ===== 输入框事件 =====
     const betInput = document.getElementById('betInput');
     betInput.addEventListener('input', function() {
         autoResizeInput();
@@ -1790,6 +1833,7 @@ document.getElementById('copyInputBtn').addEventListener('click', function() {
         calcBets();
     });
 
+    // ===== 初始化 =====
     autoResizeInput();
     renderPlaceholders();
     setInterval(scheduler, 1000);
@@ -1800,6 +1844,88 @@ document.getElementById('copyInputBtn').addEventListener('click', function() {
 };
 
 window.refreshLottery = fetchAndDisplayLottery;
+
+// ================================================================
+// 香港彩 WebSocket（只显示，不参与计算）
+// ================================================================
+var hkWs = null;
+var hkReconnectTimer = null;
+
+function connectHKWebSocket() {
+    if (hkWs) { try { hkWs.close(); } catch (e) {} hkWs = null; }
+    if (hkReconnectTimer) { clearTimeout(hkReconnectTimer); hkReconnectTimer = null; }
+
+    hkWs = new WebSocket('wss://wsws.gyycgkb.com/ws');
+
+    hkWs.onopen = function() {
+        console.log('✅ 香港 WebSocket 已连接');
+        hkWs.send(JSON.stringify({
+            subscription: ['hk'],
+            v: 2
+        }));
+    };
+
+    hkWs.onmessage = function(e) {
+        var data;
+        try { data = JSON.parse(e.data); } catch (err) { return; }
+        if (!data || !data.v || typeof data.v !== 'string') return;
+
+        var parts = data.v.split(',');
+        if (parts.length !== 10) return;
+        if (data.s !== 2) return;
+
+        var codes = parts.slice(1, 8).map(function(n) { return parseInt(n); });
+        var waves = codes.map(hkGetColor);
+        var zodiacs = codes.map(hkGetZodiac);
+
+        renderHK(codes, waves, zodiacs, parts[0], parts[8], parts[9]);
+    };
+
+    hkWs.onerror = function(e) { console.log('❌ 香港 WebSocket 错误', e); };
+
+    hkWs.onclose = function() {
+        console.log('❌ 香港 WebSocket 已断开，3 秒后重连');
+        hkReconnectTimer = setTimeout(connectHKWebSocket, 3000);
+    };
+}
+
+function hkGetColor(num) {
+    for (var c in COLOR_TO_NUMBERS) {
+        if (COLOR_TO_NUMBERS[c].indexOf(num) > -1) return c;
+    }
+    return '';
+}
+
+function hkGetZodiac(num) {
+    for (var z in ZODIAC_TO_NUMBERS) {
+        if (ZODIAC_TO_NUMBERS[z].indexOf(num) > -1) return z;
+    }
+    return '';
+}
+
+function renderHK(codes, waves, zodiacs, issue, nextIssue, nextTs) {
+    document.getElementById('lotteryPeriodHK').textContent = '香港彩  ' + issue + '期';
+
+    var box = document.getElementById('lotteryNumbersHK');
+    box.innerHTML = '';
+    for (var i = 0; i < 6; i++) {
+        box.appendChild(createNumberBox(codes[i], zodiacs[i], waves[i], false));
+    }
+    box.appendChild(makeRefreshBtn('hk'));
+    box.appendChild(createNumberBox(codes[6], zodiacs[6], waves[6], false));
+
+    if (nextTs) {
+        var d = new Date(nextTs * 1000);
+        var wd = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+        var yyyy = d.getFullYear();
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var dd = String(d.getDate()).padStart(2, '0');
+        var hh = String(d.getHours()).padStart(2, '0');
+        var mi = String(d.getMinutes()).padStart(2, '0');
+        document.getElementById('lotteryNextHK').textContent =
+            '下一期：' + nextIssue + '期  ' + yyyy + '-' + mm + '-' + dd + ' ' + wd + ' ' + hh + ':' + mi;
+    }
+}
 </script>
 </body>
 </html>
