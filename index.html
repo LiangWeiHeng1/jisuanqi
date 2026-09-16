@@ -140,10 +140,21 @@
         <button class="btn btn-success" id="pasteBtn">📋 粘贴</button>
         <button class="btn btn-danger" onclick="clearAll()">🗑️ 清空</button>
     <button class="btn btn-primary" id="copyInputBtn">📄 一键复制</button>
+    <button class="btn" id="saveHistoryBtn" style="background:#ff9800;color:#fff;">💾 保存</button>
     </div>
     <div class="result-box" id="resultBox">
         <div class="empty-result">输入投注自动计算</div>
     </div>
+
+<div id="historySection" style="margin-bottom:16px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <span style="font-size:14px;font-weight:600;color:#1a2332;">📜 历史记录</span>
+        <button onclick="clearHistory()" style="font-size:12px;padding:4px 10px;border:1px solid #dce1e8;border-radius:6px;background:#fff;cursor:pointer;">清空历史</button>
+    </div>
+    <div id="historyRecords">
+        <div style="font-size:13px;color:#8895aa;text-align:center;padding:8px 0;">暂无保存记录</div>
+    </div>
+</div>
     <div class="history">
         <div class="history-title">📝 投注明细</div>
         <div id="historyList">
@@ -1686,6 +1697,15 @@ function scheduler() {
 
 
 window.onload = function() {
+// 加载历史记录
+loadHistoryRecords();
+window._lastDay = new Date().toDateString();
+
+// 保存按钮
+document.getElementById('saveHistoryBtn').addEventListener('click', saveCurrentRecord);
+
+// 每秒检查是否跨天
+setInterval(checkNewDay, 1000);
     // ===== 香港 WebSocket 自动连接 =====
     connectHKWebSocket();
     // ===== 监听 iframe 发来的高度 =====
@@ -1862,6 +1882,169 @@ function renderHK(codes, waves, zodiacs, issue, nextIssue, nextTs) {
         document.getElementById('lotteryNextHK').textContent =
             '下一期：' + nextIssue + '期  ' + yyyy + '-' + mm + '-' + dd + ' ' + wd + ' ' + hh + ':' + mi;
     }
+}
+
+
+// ================================================================
+// 历史记录功能
+// ================================================================
+
+let historyRecords = [];
+
+// 加载历史记录
+function loadHistoryRecords() {
+    try {
+        const saved = localStorage.getItem('betHistoryRecords');
+        if (saved) {
+            historyRecords = JSON.parse(saved);
+            // 检查日期，只保留今天的
+            const today = new Date().toDateString();
+            historyRecords = historyRecords.filter(r => {
+                const recordDate = new Date(r.timestamp).toDateString();
+                return recordDate === today;
+            });
+            saveHistoryRecords();
+        }
+    } catch (e) {
+        historyRecords = [];
+    }
+    renderHistoryRecords();
+}
+
+// 保存历史记录到 localStorage
+function saveHistoryRecords() {
+    try {
+        localStorage.setItem('betHistoryRecords', JSON.stringify(historyRecords));
+    } catch (e) {}
+}
+
+// 保存当前记录
+function saveCurrentRecord() {
+    const input = document.getElementById('betInput');
+    const content = input.value.trim();
+    if (!content) {
+        alert('输入框为空，没有可保存的内容');
+        return;
+    }
+    
+    // 收集计算结果
+    const box = document.getElementById('resultBox');
+    const resultText = box ? box.innerText : '';
+    
+    const record = {
+        timestamp: Date.now(),
+        timeStr: new Date().toLocaleString('zh-CN'),
+        content: content,
+        resultText: resultText,
+        count: history.length
+    };
+    
+    historyRecords.unshift(record);
+    saveHistoryRecords();
+    renderHistoryRecords();
+    
+    // 提示
+    const btn = document.getElementById('saveHistoryBtn');
+    btn.textContent = '✅ 已保存';
+    setTimeout(() => { btn.textContent = '💾 保存'; }, 1500);
+}
+
+// 渲染历史记录列表
+function renderHistoryRecords() {
+    const box = document.getElementById('historyRecords');
+    if (!box) return;
+    
+    if (historyRecords.length === 0) {
+        box.innerHTML = '<div style="font-size:13px;color:#8895aa;text-align:center;padding:8px 0;">暂无保存记录</div>';
+        return;
+    }
+    
+    let html = '';
+    for (let i = 0; i < historyRecords.length; i++) {
+        const r = historyRecords[i];
+        html += '<div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #f0f2f5;font-size:13px;">';
+        html += '<span style="color:#4a5a72;">' + r.timeStr + '</span>';
+        html += '<div style="display:flex;gap:6px;">';
+        html += '<button onclick="viewRecord(' + i + ')" style="font-size:12px;padding:3px 8px;border:1px solid #dce1e8;border-radius:4px;background:#fff;cursor:pointer;">查看</button>';
+        html += '<button onclick="copyRecord(' + i + ')" style="font-size:12px;padding:3px 8px;border:1px solid #dce1e8;border-radius:4px;background:#fff;cursor:pointer;">复制</button>';
+        html += '<button onclick="deleteRecord(' + i + ')" style="font-size:12px;padding:3px 8px;border:1px solid #dce1e8;border-radius:4px;background:#fff;cursor:pointer;">删除</button>';
+        html += '</div>';
+        html += '</div>';
+    }
+    box.innerHTML = html;
+}
+
+// 查看记录
+function viewRecord(index) {
+    const r = historyRecords[index];
+    if (!r) return;
+    
+    let msg = '【投注内容】\n' + r.content + '\n\n【计算结果】\n' + r.resultText;
+    
+    // 弹窗显示
+    const modal = document.createElement('div');
+    modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
+    modal.innerHTML = '<div style="background:#fff;border-radius:12px;padding:16px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;">' +
+        '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;">' +
+        '<span style="font-weight:600;font-size:15px;">📜 ' + r.timeStr + '</span>' +
+        '<button onclick="this.closest(\'.ds-modal\').remove()" style="font-size:13px;padding:4px 10px;border:1px solid #dce1e8;border-radius:6px;background:#fff;cursor:pointer;">关闭</button>' +
+        '</div>' +
+        '<div style="font-size:13px;white-space:pre-wrap;word-break:break-all;line-height:1.8;">' + msg.replace(/</g, '&lt;') + '</div>' +
+        '</div>';
+    modal.className = 'ds-modal';
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) modal.remove();
+    });
+    document.body.appendChild(modal);
+}
+
+// 复制记录
+function copyRecord(index) {
+    const r = historyRecords[index];
+    if (!r) return;
+    
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(r.content).then(() => {
+            alert('已复制投注内容');
+        }).catch(() => {
+            fallbackCopy(r.content);
+            alert('已复制投注内容');
+        });
+    } else {
+        fallbackCopy(r.content);
+        alert('已复制投注内容');
+    }
+}
+
+// 删除记录
+function deleteRecord(index) {
+    if (!confirm('确定删除这条记录？')) return;
+    historyRecords.splice(index, 1);
+    saveHistoryRecords();
+    renderHistoryRecords();
+}
+
+// 清空历史
+function clearHistory() {
+    if (!confirm('确定清空所有历史记录？')) return;
+    historyRecords = [];
+    saveHistoryRecords();
+    renderHistoryRecords();
+}
+
+// 检查是否到了新的一天，到了就清空
+function checkNewDay() {
+    const now = new Date();
+    const today = now.toDateString();
+    
+    if (window._lastDay && window._lastDay !== today) {
+        // 跨天了，清空历史
+        historyRecords = [];
+        saveHistoryRecords();
+        renderHistoryRecords();
+        console.log('🌅 新的一天，历史记录已清空');
+    }
+    window._lastDay = today;
 }
 </script>
 </body>
