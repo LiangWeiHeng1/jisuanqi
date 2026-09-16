@@ -2187,7 +2187,6 @@ function copyRecord(index) {
 
 // 删除记录
 function deleteRecord(index) {
-    if (!confirm('确定删除这条记录？')) return;
     historyRecords.splice(index, 1);
     saveHistoryRecords();
     renderHistoryRecords();
@@ -2195,7 +2194,6 @@ function deleteRecord(index) {
 
 // 清空历史
 function clearHistory() {
-    if (!confirm('确定清空所有历史记录？')) return;
     historyRecords = [];
     saveHistoryRecords();
     renderHistoryRecords();
