@@ -759,6 +759,8 @@ function parseSpecial(line) {
 
 function parseBet(line) {
     line = line.trim();
+line = line.replace(/^[.、，,\s]+/, '');   // ⭐ 去开头标点
+line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
     if (!line) return null;
     const originalLine = line;
     // ⭐ “各”后面必须直接跟数字，否则报错
@@ -1309,7 +1311,7 @@ function autoSplitPureNumberLines(text) {
         var line = lines[i].trim();
         if (!line) { result.push(''); continue; }
 
-        var isPureNumberLine = /^[\d.、，,\s\/\-#号各]+$/.test(line) && /各/.test(line);
+        var isPureNumberLine = /各/.test(line);
         // ⭐ “各”后面必须直接跟数字，否则不拆，原样保留，交给 parseBet 报错
         if (/各[^\d]/.test(line)) {
             result.push(line);
