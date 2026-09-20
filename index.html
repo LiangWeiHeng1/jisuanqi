@@ -916,8 +916,8 @@ function parseBet(line) {
         return { type: 'expand', category: 'special', items: numbers, itemType: '号码(数字+生肖合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-// 生肖 + 多个数字 + 各 + 金额（如 牛2.5.6.7.8.9各50）
-const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)([\d.、，,\s\-]+?)(?:各数|各号|各码|各)?\s*(\d+)$/);
+// 生肖 + 多个数字 + 各 + 金额（如 牛2.5.6.7.8.9各50，支持任意符号分隔）
+const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)([\s\S]*?)(?:各数|各号|各码|各)\s*(\d+)$/);
 if (zodiacMultiNumMatch) {
     const zodiacStr = zodiacMultiNumMatch[1];
     const numsStr = zodiacMultiNumMatch[2];
@@ -932,7 +932,7 @@ if (zodiacMultiNumMatch) {
         numbers = numbers.concat(nums);
     }
 
-    // 2. 后面的数字也加进去
+    // 2. 后面的数字也加进去（不管什么符号，只提取数字）
     const extraNums = numsStr.match(/\d+/g) || [];
     for (const n of extraNums) {
         numbers.push(parseInt(n));
