@@ -1356,7 +1356,7 @@ function calcBets() {
 
     const rawLines = input.value.split('\n').filter(l => l.trim());
 
-    const removeChars = ['特码', '奥','特','码', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元', '数'];
+    const removeChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','特码', '门','米','斤'];
     const cleanedLines = rawLines.map(line => {
         let newLine = line;
         for (const ch of removeChars) {
