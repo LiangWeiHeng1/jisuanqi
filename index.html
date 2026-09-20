@@ -908,22 +908,44 @@ function parseBet(line) {
         return { type: 'expand', category: 'special', items: numbers, itemType: '号码(数字+生肖合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-    const zodiacNumMergeMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(\d+)(?:各数|各号|各码|各)?\s*(\d+)$/);
-    if (zodiacNumMergeMatch) {
-        const zodiacStr = zodiacNumMergeMatch[1];
-        const num = parseInt(zodiacNumMergeMatch[2]);
-        const price = parseInt(zodiacNumMergeMatch[3]);
-        let numbers = [];
-        const items = zodiacStr.split('');
-        for (const ch of items) {
-            const nums = ZODIAC_TO_NUMBERS[ch] || [];
-            numbers = numbers.concat(nums);
-        }
-        if (!numbers.includes(num)) { numbers.push(num); }
-        const count = numbers.length;
-        const total = count * price;
-        return { type: 'expand', category: 'special', items: numbers, itemType: '号码(生肖+数字合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
+// 生肖 + 多个数字 + 各 + 金额（如 牛2.5.6.7.8.9各50）
+const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)([\d.、，,\s\-]+?)(?:各数|各号|各码|各)?\s*(\d+)$/);
+if (zodiacMultiNumMatch) {
+    const zodiacStr = zodiacMultiNumMatch[1];
+    const numsStr = zodiacMultiNumMatch[2];
+    const price = parseInt(zodiacMultiNumMatch[3]);
+
+    let numbers = [];
+
+    // 1. 生肖展开成号码
+    const zodiacItems = zodiacStr.split('');
+    for (const ch of zodiacItems) {
+        const nums = ZODIAC_TO_NUMBERS[ch] || [];
+        numbers = numbers.concat(nums);
     }
+
+    // 2. 后面的数字也加进去
+    const extraNums = numsStr.match(/\d+/g) || [];
+    for (const n of extraNums) {
+        numbers.push(parseInt(n));
+    }
+
+    // 3. 不去重，有多少算多少
+    const count = numbers.length;
+    const total = count * price;
+
+    return {
+        type: 'expand',
+        category: 'special',
+        items: numbers,
+        itemType: '号码(生肖+数字合并)',
+        unitPrice: price,
+        count: count,
+        amount: total,
+        display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元',
+        raw: originalLine
+    };
+}
 
     const zodiacSepNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(?:[、，,.\s。！？；;！?、…—·\t\n\r]+)(\d+)(?:各数|各号|各码|各)?\s*(\d+)$/);
     if (zodiacSepNumMatch) {
