@@ -782,7 +782,7 @@ function parseBet(line) {
         const correctZodiacs = '鼠牛虎兔龙蛇马羊猴鸡狗猪';
         const hasZodiac = chineseChars.some(ch => correctZodiacs.includes(ch));
         if (hasZodiac) {
-            const allowChars = '平各连有友二三四五';
+            const allowChars = '平各连有友二三四五特一肖';
             const wrongChars = chineseChars.filter(ch => !correctZodiacs.includes(ch) && !allowChars.includes(ch));
             if (wrongChars.length > 0) {
                 return {
@@ -840,14 +840,14 @@ function parseBet(line) {
         return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: price, amount: total, display: items.length + '个尾数 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-    const pingTeSlashMatch = line.match(/^(平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪])\s*\/\s*(\d+)$/);
-    if (pingTeSlashMatch) {
-        const zodiac = pingTeSlashMatch[2];
-        const price = parseInt(pingTeSlashMatch[3]);
-        const items = [zodiac];
-        const total = items.length * price;
-        return { type: 'pingte_zodiac', category: 'other', items: items, itemType: '生肖', unitPrice: price, amount: total, display: '平特' + zodiac + ' × ' + price + '元 = ' + total + '元', raw: originalLine };
-    }
+const pingTeSlashMatch = line.match(/^(?:平特一肖|平一肖|平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?\s*[\/]?\s*(\d+)$/);
+if (pingTeSlashMatch) {
+    const zodiacStr = pingTeSlashMatch[1];
+    const price = parseInt(pingTeSlashMatch[2]);
+    const items = zodiacStr.split('');
+    const total = items.length * price;
+    return { type: 'pingte_zodiac', category: 'other', items: items, itemType: '生肖', unitPrice: price, amount: total, display: items.length + '个生肖 × ' + price + '元 = ' + total + '元', raw: originalLine };
+}
 
     if (/^(平特|平)/.test(line)) {
         const fm = line.match(/^(平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?(\d+)$/);
