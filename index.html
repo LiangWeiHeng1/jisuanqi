@@ -764,7 +764,7 @@ line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
     if (!line) return null;
     const originalLine = line;
     // ⭐ “各”后面必须直接跟数字，否则报错
-    if (/各[^\d]/.test(line)) {
+    if (/各(?![数号码]\d)[^\d]/.test(line)) {
         return {
             type: 'error',
             category: 'other',
