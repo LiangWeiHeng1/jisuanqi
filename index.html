@@ -431,7 +431,7 @@ function parseNotHit(line) {
     
     return {
         type: isFive ? 'not_hit_5' : 'not_hit_10',
-        category: 'special',
+        category: 'other',
         numbers: numbers,
         amount: amount,
         unitPrice: amount,
@@ -1413,6 +1413,10 @@ if (pendingNumbers.length > 0) {
     history = [];
     let total = 0;
     const totalParts = [];
+    let totalSpecial = 0;
+    let totalOther = 0;
+    const specialParts = [];
+    const otherParts = [];
     let hasError = false;
     const result = getLotteryResult();
 
@@ -1427,6 +1431,13 @@ if (pendingNumbers.length > 0) {
             } else {
                 total += bet.amount;
                 totalParts.push(String(bet.amount));
+                if (bet.category === 'special') {
+                    totalSpecial += bet.amount;
+                    specialParts.push(String(bet.amount));
+                } else {
+                    totalOther += bet.amount;
+                    otherParts.push(String(bet.amount));
+                }
                 const winResult = calcBetWin(bet, result);
                 bet.winAmount = winResult.winAmount || 0;
                 bet.winDetail = winResult.detail || '未中奖';
@@ -1473,7 +1484,8 @@ if (pendingNumbers.length > 0) {
         box.innerHTML = '<div class="empty-result">未识别到有效投注</div>';
     } else {
         let html = '';
-        html += '<div>' + totalParts.join('+') + '=' + total + '</div>';
+        html += '<div>特投注：' + specialParts.join('+') + '=' + totalSpecial + '</div>';
+        html += '<div>其他投注：' + otherParts.join('+') + '=' + totalOther + '</div>';
         html += '<div>' + total + '×' + (waterRate * 100).toFixed(1) + '%=' + shuiQianDisplay + '</div>';
 
         if (specialPriceParts.length > 0) {
@@ -1523,7 +1535,8 @@ if (abnormalHtml) {
         if (copyBtn) {
             copyBtn.addEventListener('click', function() {
                 let lines = [];
-                lines.push(totalParts.join('+') + '=' + total);
+                lines.push('特投注：' + specialParts.join('+') + '=' + totalSpecial);
+                lines.push('其他投注：' + otherParts.join('+') + '=' + totalOther);
                 lines.push(total + '×' + (waterRate * 100).toFixed(1) + '%=' + shuiQianDisplay);
                 if (specialPriceParts.length > 0) {
                     const priceStr = specialPriceParts.map((p, index) => index === 0 ? '特' + p : p).join('+');
