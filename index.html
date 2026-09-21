@@ -764,7 +764,7 @@ line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
     if (!line) return null;
     const originalLine = line;
     // ⭐ “各”后面必须直接跟数字，否则报错
-    if (/各(?![数号码]\d)[^\d]/.test(line)) {
+    if (/各[^\d]/.test(line)) {
         return {
             type: 'error',
             category: 'other',
@@ -772,7 +772,7 @@ line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
             display: '❌ “各”后面必须直接跟数字，不能有符号或空格'
         };
     }
-    const ignoreChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','特码', '门','米','斤'];
+    const ignoreChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','数', '门','米','斤'];
     for (const ch of ignoreChars) {
         line = line.replaceAll(ch, '');
     }
@@ -1356,7 +1356,7 @@ function calcBets() {
 
     const rawLines = input.value.split('\n').filter(l => l.trim());
 
-    const removeChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','特码', '门','米','斤'];
+    const removeChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','数', '门','米','斤'];
     const cleanedLines = rawLines.map(line => {
         let newLine = line;
         for (const ch of removeChars) {
