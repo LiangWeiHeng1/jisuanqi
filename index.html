@@ -383,17 +383,17 @@ const ODDS = {
     'combo_zodiac_5': 100, 'combo_zodiac_5_ma': 80,
     'combo_tail_2': 3, 'combo_tail_3': 7, 'combo_tail_4': 15,
     'not_hit_5': 2,     // 五不中 2倍
+    'not_hit_6': 2.5,   // 六不中 2.5倍  ⭐ 新增
     'not_hit_10': 4.5   // 十不中 4.5倍
 };
 
 // ================================================================
-// 五不中 / 十不中 解析（支持各种符号）
+// 五不中 / 六不中 / 十不中 解析（支持各种符号）
 // ================================================================
 
 function parseNotHit(line) {
-    // 匹配格式：各种符号分隔的数字 + 五不中/十不中 + 金额
-    // 支持：. 、 ， , 空格 / - # 等
-    const match = line.match(/^([\d.、，,。\s\/\-#]+)(五不中|十不中)\s*(\d+)$/);
+    // 匹配格式：各种符号分隔的数字 + 五不中/六不中/十不中 + 金额
+    const match = line.match(/^([\d.、，,。\s\/\-#]+)(五不中|六不中|十不中)\s*(\d+)$/);
     if (!match) return null;
     
     const numStr = match[1];
@@ -406,6 +406,7 @@ function parseNotHit(line) {
     const numbers = nums.map(Number);
     
     const isFive = type === '五不中';
+    const isSix = type === '六不中';   // ⭐ 新增
     const isTen = type === '十不中';
     
     // 验证数字个数
@@ -417,6 +418,14 @@ function parseNotHit(line) {
             display: '❌ 五不中需要5个数字，当前' + numbers.length + '个'
         };
     }
+    if (isSix && numbers.length !== 6) {   // ⭐ 新增
+        return {
+            type: 'error',
+            category: 'other',
+            raw: line,
+            display: '❌ 六不中需要6个数字，当前' + numbers.length + '个'
+        };
+    }
     if (isTen && numbers.length !== 10) {
         return {
             type: 'error',
@@ -426,11 +435,11 @@ function parseNotHit(line) {
         };
     }
     
-    const typeName = isFive ? '五不中' : '十不中';
+    const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');   // ⭐ 修改
     const displayText = numbers.join(',') + ' ' + typeName + ' ' + amount + '元 (全不中才赢)';
     
     return {
-        type: isFive ? 'not_hit_5' : 'not_hit_10',
+        type: isFive ? 'not_hit_5' : (isSix ? 'not_hit_6' : 'not_hit_10'),   // ⭐ 修改
         category: 'other',
         numbers: numbers,
         amount: amount,
@@ -441,7 +450,7 @@ function parseNotHit(line) {
 }
 
 // ================================================================
-// 五不中 / 十不中 中奖计算
+// 五不中 / 六不中 / 十不中 中奖计算
 // ================================================================
 
 function calcNotHitWin(bet, result) {
@@ -459,16 +468,17 @@ function calcNotHitWin(bet, result) {
     if (hitCount === 0) {
         // 全不中 → 中奖
         const isFive = bet.type === 'not_hit_5';
-        const odds = isFive ? 2 : 4.5;
+        const isSix = bet.type === 'not_hit_6';   // ⭐ 新增
+        const odds = isFive ? 2 : (isSix ? 2.5 : 4.5);   // ⭐ 修改
         const winAmount = unitPrice * odds;
-        const typeName = isFive ? '五不中' : '十不中';
+        const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');   // ⭐ 修改
         return {
             winAmount: winAmount,
             detail: '✅ 全不中！' + betNumbers.join(',') + ' 均未开出 → ' + unitPrice + '×' + odds + '倍=' + winAmount + '元'
         };
     } else {
         // 有数字中了 → 输
-        const typeName = bet.type === 'not_hit_5' ? '五不中' : '十不中';
+        const typeName = bet.type === 'not_hit_5' ? '五不中' : (bet.type === 'not_hit_6' ? '六不中' : '十不中');   // ⭐ 修改
         return {
             winAmount: 0,
             detail: '❌ 命中 ' + hitNumbers.join(',') + ' (' + hitCount + '个) → 不中'
@@ -670,6 +680,7 @@ function parseCombo(line) {
     let remainPart = line.replace(/([2-5二三四五]+)(?:连|有|友)/g, '');
     remainPart = remainPart.replace(/(\d+)$/, '');
     remainPart = remainPart.replace(/尾/g, '');
+    remainPart = remainPart.replace(/[各组]/g, '');   // ⭐ 新增：去掉"各""组"字
     remainPart = remainPart.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '');
     
     let items = [];
@@ -763,16 +774,16 @@ line = line.replace(/^[.、，,\s]+/, '');   // ⭐ 去开头标点
 line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
     if (!line) return null;
     const originalLine = line;
-    // ⭐ “各”后面必须直接跟数字，否则报错
-    if (/各[^\d]/.test(line)) {
+    // ⭐ "各"后面必须直接跟数字，但"各组"是连肖/连尾的合法写法，排除
+    if (/各[^\d]/.test(line) && !/各组/.test(line)) {   // ⭐ 修改：排除"各组"
         return {
             type: 'error',
             category: 'other',
             raw: originalLine,
-            display: '❌ “各”后面必须直接跟数字，不能有符号或空格'
+            display: '❌ "各"后面必须直接跟数字，不能有符号或空格'
         };
     }
-    const ignoreChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','数', '门','米','斤'];
+    const ignoreChars = ['特', '奥', '澳', '新', '复', '式', '特奥', '奥特', '元','码','数', '门','米','斤'];
     for (const ch of ignoreChars) {
         line = line.replaceAll(ch, '');
     }
@@ -784,7 +795,7 @@ line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
         const correctZodiacs = '鼠牛虎兔龙蛇马羊猴鸡狗猪';
         const hasZodiac = chineseChars.some(ch => correctZodiacs.includes(ch));
         if (hasZodiac) {
-            const allowChars = '平各连有友二三四五特一肖';
+            const allowChars = '平各连有友二三四五特一肖组';   // ⭐ 加入"组"
             const wrongChars = chineseChars.filter(ch => !correctZodiacs.includes(ch) && !allowChars.includes(ch));
             if (wrongChars.length > 0) {
                 return {
@@ -797,7 +808,7 @@ line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
         }
     }
 
-    // 先检测五不中/十不中（放在最前面，优先匹配）
+    // 先检测五不中/六不中/十不中（放在最前面，优先匹配）
     const notHitResult = parseNotHit(line);
     if (notHitResult) return notHitResult;
 
@@ -918,27 +929,28 @@ if (pingTeSlashMatch) {
         return { type: 'expand', category: 'special', items: numbers, itemType: '号码(数字+生肖合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-// 生肖 + 多个数字 + 各 + 金额（如 牛2.5.6.7.8.9各50，支持任意符号分隔）
-const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)([\s\S]*?)(?:各数|各号|各码|各)\s*(\d+)$/);
+// ⭐ 去掉嵌套量词，避免正则回溯卡死
+const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪][鼠牛虎兔龙蛇马羊猴鸡狗猪\d\s.、，,\-#+@%&*|~]*?)(?:各数|各号|各码|各)\s*(\d+)$/);
 if (zodiacMultiNumMatch) {
     const zodiacStr = zodiacMultiNumMatch[1];
-    const numsStr = zodiacMultiNumMatch[2];
-    const price = parseInt(zodiacMultiNumMatch[3]);
+    const price = parseInt(zodiacMultiNumMatch[2]);   // ⭐ 注意：金额变成第 2 组
 
     let numbers = [];
 
-    // 1. 生肖展开成号码
-    const zodiacItems = zodiacStr.split('');
+    // 1. 生肖展开成号码（提取所有生肖字）
+    const zodiacItems = zodiacStr.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g) || [];
     for (const ch of zodiacItems) {
         const nums = ZODIAC_TO_NUMBERS[ch] || [];
         numbers = numbers.concat(nums);
     }
 
-    // 2. 后面的数字也加进去（不管什么符号，只提取数字）
-    const extraNums = numsStr.match(/\d+/g) || [];
+    // 2. 如果 zodiacStr 里还有数字，也加进去（兼容 牛2.5.6 这种写法）
+    const extraNums = zodiacStr.match(/\d+/g) || [];
     for (const n of extraNums) {
         numbers.push(parseInt(n));
     }
+
+
 
     // 3. 不去重，有多少算多少
     const count = numbers.length;
@@ -957,7 +969,7 @@ if (zodiacMultiNumMatch) {
     };
 }
 
-    const zodiacSepNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(?:[、，,.\s。！？；;！?、…—·\t\n\r]+)(\d+)(?:各数|各号|各码|各)?\s*(\d+)$/);
+    const zodiacSepNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(?:[^鼠牛虎兔龙蛇马羊猴鸡狗猪\d]+)(\d+)(?:各数|各号|各码|各)?\s*(\d+)$/);
     if (zodiacSepNumMatch) {
         const zodiacStr = zodiacSepNumMatch[1];
         const num = parseInt(zodiacSepNumMatch[2]);
@@ -974,11 +986,11 @@ if (zodiacMultiNumMatch) {
         return { type: 'expand', category: 'special', items: numbers, itemType: '号码(生肖+数字合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-    const zNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[、，,.\s。！？；;！?、…—·\t\n\r]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)(\d+)$/);
+    const zNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[^鼠牛虎兔龙蛇马羊猴鸡狗猪]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)(\d+)$/);
     if (zNumMatch) {
         const rawStr = zNumMatch[1];
         const price = parseInt(zNumMatch[2]);
-        let rawItems = rawStr.split(/[、，,.\s。！？；;！?、…—·\t\n\r]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
+        let rawItems = rawStr.split(/[^鼠牛虎兔龙蛇马羊猴鸡狗猪]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
         let items = [];
         for (const item of rawItems) {
             if (item.length === 1) { items.push(item); } else {
@@ -999,11 +1011,11 @@ if (zodiacMultiNumMatch) {
         }
     }
 
-    const numZMatch = line.match(/^(\d+)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[、，,.\s。！？；;！?、…—·\t\n\r]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)$/);
+    const numZMatch = line.match(/^(\d+)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[^鼠牛虎兔龙蛇马羊猴鸡狗猪]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)$/);
     if (numZMatch) {
         const price = parseInt(numZMatch[1]);
         const rawStr = numZMatch[2];
-        let rawItems = rawStr.split(/[、，,.\s。！？；;！?、…—·\t\n\r]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
+        let rawItems = rawStr.split(/[^鼠牛虎兔龙蛇马羊猴鸡狗猪]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
         let items = [];
         for (const item of rawItems) {
             if (item.length === 1) { items.push(item); } else {
@@ -1024,11 +1036,11 @@ if (zodiacMultiNumMatch) {
         }
     }
 
-    const zodiacMatch = line.match(/([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[、，,.\s。！？；;！?、…—·\t\n\r]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)(?:各数|各号|各码|各)?\s*(\d+)/);
+    const zodiacMatch = line.match(/([鼠牛虎兔龙蛇马羊猴鸡狗猪]+(?:[^鼠牛虎兔龙蛇马羊猴鸡狗猪\d]*[鼠牛虎兔龙蛇马羊猴鸡狗猪]+)*)(?:各数|各号|各码|各)?\s*(\d+)/);
     if (zodiacMatch) {
         const rawStr = zodiacMatch[1];
         const price = parseInt(zodiacMatch[2]);
-        let rawItems = rawStr.split(/[、，,.\s。！？；;！?、…—·\t\n\r]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
+        let rawItems = rawStr.split(/[^鼠牛虎兔龙蛇马羊猴鸡狗猪]+/).filter(s => s.length > 0 && /[鼠牛虎兔龙蛇马羊猴鸡狗猪]/.test(s));
         let items = [];
         for (const item of rawItems) {
             if (item.length === 1) { items.push(item); } else {
@@ -1124,8 +1136,8 @@ function calcBetWin(bet, result) {
     const teMa = openCodes.length > 0 ? openCodes[openCodes.length - 1] : null;
     const allCodes = openCodes;
 
-    // 检测五不中/十不中
-    if (bet.type === 'not_hit_5' || bet.type === 'not_hit_10') {
+    // 检测五不中/六不中/十不中
+    if (bet.type === 'not_hit_5' || bet.type === 'not_hit_6' || bet.type === 'not_hit_10') {   // ⭐ 修改
         return calcNotHitWin(bet, result);
     }
 
@@ -1312,8 +1324,8 @@ function autoSplitPureNumberLines(text) {
         if (!line) { result.push(''); continue; }
 
         var isPureNumberLine = /各/.test(line);
-        // ⭐ “各”后面必须直接跟数字，否则不拆，原样保留，交给 parseBet 报错
-        if (/各[^\d]/.test(line)) {
+        // ⭐ "各"后面必须直接跟数字，但"各组"是合法写法，排除
+        if (/各[^\d]/.test(line) && !/各组/.test(line)) {   // ⭐ 修改：排除"各组"
             result.push(line);
             continue;
         }
@@ -1356,7 +1368,7 @@ function calcBets() {
 
     const rawLines = input.value.split('\n').filter(l => l.trim());
 
-    const removeChars = ['特', '奥', '澳', '新', '新澳', '新奥', '特奥', '奥特', '元','码','数', '门','米','斤'];
+    const removeChars = ['特', '奥', '澳', '新', '复', '式', '特奥', '奥特', '元','码','数', '门','米','斤'];
     const cleanedLines = rawLines.map(line => {
         let newLine = line;
         for (const ch of removeChars) {
@@ -1421,7 +1433,18 @@ if (pendingNumbers.length > 0) {
     const result = getLotteryResult();
 
     for (const line of lines) {
-        let cleanedLine = line.replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
+        // ⭐ 单式行（含 二中二/三中三/平码/平特 且含 /）不转换符号，保护 / 语法
+        const isSingleStyle = /(二中二|三中三|平码|平特|平)/.test(line) && line.includes('/');
+        
+        let cleanedLine;
+        if (isSingleStyle) {
+            // 单式行只做基础清理，不动 /
+            cleanedLine = line.replace(/[、，,。！？*；;！?、…—·\t\n\r]+/g, '.');
+        } else {
+            // 普通行：非中文非数字 → .（生肖之间的任意符号都变 .）
+            cleanedLine = line.replace(/[^\u4e00-\u9fa5\d\s]/g, '.');
+            cleanedLine = cleanedLine.replace(/\s+/g, ' ');
+        }
         const bet = parseBet(cleanedLine);
         if (bet) {
             if (bet.type === 'error') {
@@ -1571,7 +1594,8 @@ if (abnormalHtml) {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
         if (/各/.test(line)) {
-return line.replace(/\+/g, '.').replace(/[、，,.\s。！？*；;！?、…—·\t\n\r]+/g, '.');
+            // ⭐ 非中文非数字 → .，和上面转换保持一致
+            return line.replace(/[^\u4e00-\u9fa5\d\s]/g, '.').replace(/\s+/g, ' ');
         }
         return line;
     });
