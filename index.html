@@ -5,6 +5,93 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>投注计算器 · 开奖数据 · 直播</title>
     <style>
+
+.kj-box {
+    width: 100%;
+    display: flex;
+    align-items: stretch;
+}
+
+.kj-l {
+    flex: 1;
+    min-width: 0;
+}
+
+.kj-r {
+    flex: 0 0 15%;
+    min-width: 0;
+}
+
+.kj-box table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+}
+
+.kj-box th,
+.kj-box td {
+    padding: 0;
+    margin: 0;
+}
+
+.kj-box .o {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    background: #0000ff;
+}
+
+.kj-box .txt {
+    width: 100%;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #1a2332;
+    background: #fff;
+    line-height: 1;
+}
+
+
+.kj-box table {
+    width: 100%;
+    border-collapse: separate;   /* ⭐ 改成 separate */
+    border-spacing: 2px 0;       /* ⭐ 水平 2px 间隙 */
+    table-layout: fixed;
+}
+.kj-box th, .kj-box td { padding: 0 1px;; margin: 0; }
+
+.kj-box .o {
+    width: calc(100% - 2px);
+margin: 0 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 0;
+    color: #fff;
+    font-weight: 700;
+    font-size: 20px;
+    line-height: 1;
+    background: #0000ff;
+}
+
+.kj-box .txt {
+    width: calc(100% - 2px);
+    margin: 0 1px;
+    text-align: center;
+    padding: 6px 0;
+    font-size: 14px;
+    color: #1a2332;
+    background: #fff;
+    line-height: 1;
+}
+
+
         * { margin: 0; padding: 0; box-sizing: border-box; }
         body { 
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
@@ -249,15 +336,49 @@
 <body>
 <div class="container">
     <h1>📊 投注计算器</h1>
-    <div class="lottery-info" id="lotteryInfo">
-        <div class="lottery-header">
-            <span class="lottery-date" id="lotteryDate">📅 加载中...</span>
-            <span class="lottery-period" id="lotteryPeriod"></span>
-        </div>
-<div class="lottery-row">
-    <div class="lottery-numbers" id="lotteryNumbers"></div>
-</div>
+<div class="lottery-info" id="lotteryInfo">
+    <div class="lottery-header">
+        <span class="lottery-date" id="lotteryDate">📅 加载中...</span>
+        <span class="lottery-period" id="lotteryPeriod"></span>
+        <span id="moRefreshBtn" style="cursor:pointer;color:#4f7cff;font-weight:600;font-size:13px;user-select:none;">🔄 刷新</span>
     </div>
+    <div class="kj-box">
+        <div class="kj-l">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <th width="16.66%"><div id="w1" class="o"><div id="m1" class="num">--</div></div></th>
+                        <th width="16.66%"><div id="w2" class="o"><div id="m2" class="num">--</div></div></th>
+                        <th width="16.66%"><div id="w3" class="o"><div id="m3" class="num">--</div></div></th>
+                        <th width="16.66%"><div id="w4" class="o"><div id="m4" class="num">--</div></div></th>
+                        <th width="16.66%"><div id="w5" class="o"><div id="m5" class="num">--</div></div></th>
+                        <th width="16.66%"><div id="w6" class="o"><div id="m6" class="num">--</div></div></th>
+                    </tr>
+                    <tr>
+                        <td><div id="m1x" class="txt">--</div></td>
+                        <td><div id="m2x" class="txt">--</div></td>
+                        <td><div id="m3x" class="txt">--</div></td>
+                        <td><div id="m4x" class="txt">--</div></td>
+                        <td><div id="m5x" class="txt">--</div></td>
+                        <td><div id="m6x" class="txt">--</div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="kj-r">
+            <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                <tbody>
+                    <tr>
+                        <th><div id="w7" class="o"><div id="s1" class="num">--</div></div></th>
+                    </tr>
+                    <tr>
+                        <td><div id="s1x" class="txt">--</div></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
 <!-- 香港彩开奖 iframe -->
 <div class="lottery-info" id="lotteryInfoHK" style="margin-top:10px;padding:0;overflow:hidden;">
 <iframe
@@ -1757,7 +1878,7 @@ const RETRY_INTERVAL = 3000;
 
 const lotteryDateEl = document.getElementById('lotteryDate');
 const lotteryPeriodEl = document.getElementById('lotteryPeriod');
-const lotteryNumbersEl = document.getElementById('lotteryNumbers');
+const lotteryNumbersEl = null;
 
 function createNumberBox(num, zodiac, wave, isPlaceholder) {
     if (isPlaceholder === undefined) isPlaceholder = false;
@@ -1797,69 +1918,47 @@ function makeRefreshBtn(type) {
 
 
 function renderPlaceholders() {
-    lotteryNumbersEl.innerHTML = '';
-    for (let i = 0; i < 6; i++) {
-        lotteryNumbersEl.appendChild(createNumberBox(null, null, null, true));
+    for (let i = 1; i <= 6; i++) {
+        document.getElementById('m' + i).textContent = '?';
+        document.getElementById('m' + i + 'x').textContent = '--';
+        document.getElementById('w' + i).style.background = '#dce1e8';
+        document.getElementById('w' + i).style.color = '#8895aa';
     }
-    lotteryNumbersEl.appendChild(makeRefreshBtn('mo'));
-    lotteryNumbersEl.appendChild(createNumberBox(null, null, null, true));
+    document.getElementById('s1').textContent = '?';
+    document.getElementById('s1x').textContent = '--';
+    document.getElementById('w7').style.background = '#dce1e8';
+    document.getElementById('w7').style.color = '#8895aa';
 }
 
 function displayAllNumbers(codes, waves, zodiacs, period, openTime) {
     const dateStr = openTime ? openTime.split(' ')[0] : '';
     lotteryDateEl.textContent = '📅 ' + dateStr;
     lotteryPeriodEl.textContent = period ? period.replace('2026', '') + '期' : '';
-    lotteryNumbersEl.innerHTML = '';
+
+    const colorMap = { red: '#ff0000', green: '#009900', blue: '#0000ff' };
+
     for (let i = 0; i < 6; i++) {
-        const num = codes[i] || '--';
-        const zodiacName = zodiacs[i] || '--';
-        const waveColor = waves[i] || 'blue';
-        lotteryNumbersEl.appendChild(createNumberBox(num, zodiacName, waveColor, false));
+        const numEl = document.getElementById('m' + (i + 1));
+        const txtEl = document.getElementById('m' + (i + 1) + 'x');
+        const boxEl = document.getElementById('w' + (i + 1));
+        numEl.textContent = String(codes[i]).padStart(2, '0');
+        txtEl.textContent = zodiacs[i] || '--';
+        boxEl.style.background = colorMap[waves[i]] || '#0000ff';
+        boxEl.style.color = '#fff';
     }
-    lotteryNumbersEl.appendChild(makeRefreshBtn('mo'));
-    const specialNum = codes[6] || '--';
-    const specialZodiac = zodiacs[6] || '--';
-    const specialWave = waves[6] || 'blue';
-    lotteryNumbersEl.appendChild(createNumberBox(specialNum, specialZodiac, specialWave, false));
+
+    const s1 = document.getElementById('s1');
+    const s1x = document.getElementById('s1x');
+    const w7 = document.getElementById('w7');
+    s1.textContent = String(codes[6]).padStart(2, '0');
+    s1x.textContent = zodiacs[6] || '--';
+    w7.style.background = colorMap[waves[6]] || '#ff0000';
+    w7.style.color = '#fff';
 }
 
 function displayNumbersOneByOne(codes, waves, zodiacs, period, openTime) {
-    const dateStr = openTime ? openTime.split(' ')[0] : '';
-    lotteryDateEl.textContent = '📅 ' + dateStr;
-    lotteryPeriodEl.textContent = period ? period.replace('2026', '') + '期' : '';
-    lotteryNumbersEl.innerHTML = '';
-
-    const items = [];
-    for (let i = 0; i < 6; i++) {
-        items.push({ num: codes[i] || '--', zodiac: zodiacs[i] || '--', wave: waves[i] || 'blue', isSpecial: false });
-    }
-    items.push({ num: codes[6] || '--', zodiac: zodiacs[6] || '--', wave: waves[6] || 'blue', isSpecial: true });
-
-    const boxes = [];
-    for (let i = 0; i < items.length; i++) {
-        const item = items[i];
-        if (item.isSpecial) {
-            const btn = makeRefreshBtn('mo');
-            btn.style.visibility = 'hidden';
-            lotteryNumbersEl.appendChild(btn);
-            boxes.push(btn);
-        }
-        const box = createNumberBox(item.num, item.zodiac, item.wave, false);
-        box.style.visibility = 'hidden';
-        lotteryNumbersEl.appendChild(box);
-        boxes.push(box);
-    }
-
-    let index = 0;
-    const interval = setInterval(function() {
-        if (index >= boxes.length) {
-            clearInterval(interval);
-            calcBets();
-            return;
-        }
-        boxes[index].style.visibility = 'visible';
-        index++;
-    }, 0);
+    displayAllNumbers(codes, waves, zodiacs, period, openTime);
+    calcBets();
 }
 
 async function fetchAndDisplayLottery(force, skipAnimation) {
@@ -1939,7 +2038,7 @@ async function fetchAndDisplayLottery(force, skipAnimation) {
                         }
                         return true;
                     } else {
-                        const isShowingPlaceholder = lotteryNumbersEl.querySelector('.placeholder') !== null;
+                        const isShowingPlaceholder = document.getElementById('m1').textContent === '?';
                         if (isShowingPlaceholder) {
                             displayAllNumbers(codes, waves, zodiacs, period, openTime);
                             setLotteryResult({ codes: codes, waves: waves, zodiacs: zodiacs });
@@ -1954,7 +2053,7 @@ async function fetchAndDisplayLottery(force, skipAnimation) {
         return false;
     } catch (error) {
         console.error('获取开奖信息失败:', error);
-        lotteryNumbersEl.innerHTML = '<div class="lottery-error">⚠️ 加载开奖信息失败：' + error.message + '</div>';
+        console.error('加载开奖信息失败：' + error.message);
         return false;
     }
 }
@@ -2110,6 +2209,15 @@ setInterval(checkNewDay, 1000);
     // ===== 初始化 =====
     autoResizeInput();
     renderPlaceholders();
+    document.getElementById('moRefreshBtn').addEventListener('click', function(){
+        var self = this;
+        self.textContent = '⏳ 加载中...';
+        self.style.opacity = '0.6';
+        fetchAndDisplayLottery(true, true).finally(function(){
+            self.textContent = '🔄 刷新';
+            self.style.opacity = '1';
+        });
+    });
     setInterval(scheduler, 1000);
     scheduler();
 
