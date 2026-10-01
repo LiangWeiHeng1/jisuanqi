@@ -260,13 +260,14 @@
     </div>
 <!-- 香港彩开奖 iframe -->
 <div class="lottery-info" id="lotteryInfoHK" style="margin-top:10px;padding:0;overflow:hidden;">
-    <iframe
-        id="hkDrawIframe"
-        src="https://xgkaijjiang-kj2025-02-28.xgkjhghhhhter320km.com/34007bm.html"
-        style="width:100%;height:50px;border:none;display:block;"
-        loading="lazy"
-        referrerpolicy="no-referrer"
-    ></iframe>
+<iframe
+    id="hkDrawIframe"
+    src="https://xgkaijjiang-kj2025-02-28.ceapleu.com:2099/1134007hk.html"
+    style="width:100%;height:185px;border:none;display:block;"
+    scrolling="no"
+    loading="lazy"
+    referrerpolicy="no-referrer"
+></iframe>
 </div>
 
 
@@ -770,12 +771,39 @@ function parseSpecial(line) {
 
 function parseBet(line) {
     line = line.trim();
-line = line.replace(/^[.、，,\s]+/, '');   // ⭐ 去开头标点
-line = line.replace(/[.、，,\s]+$/, '');   // ⭐ 去末尾标点
+    line = line.replace(/^[.、，,\s]+/, '');
+    line = line.replace(/[.、，,\s]+$/, '');
     if (!line) return null;
     const originalLine = line;
-    // ⭐ "各"后面必须直接跟数字，但"各组"是连肖/连尾的合法写法，排除
-    if (/各[^\d]/.test(line) && !/各组/.test(line)) {   // ⭐ 修改：排除"各组"
+
+    // ⭐ 单号：01/50、1/100、01#50、01号50
+    const simpleNumMatch = line.match(/^(\d+)\s*[\/#号]\s*(\d+)$/);
+    if (simpleNumMatch) {
+        const num = parseInt(simpleNumMatch[1]);
+        const price = parseInt(simpleNumMatch[2]);
+        if (num >= 1 && num <= 49) {
+            return {
+                type: 'expand',
+                category: 'special',
+                items: [num],
+                itemType: '号码',
+                unitPrice: price,
+                count: 1,
+                amount: price,
+                display: '1个号码 × ' + price + '元 = ' + price + '元',
+                raw: originalLine
+            };
+        } else {
+            return {
+                type: 'error',
+                category: 'other',
+                raw: originalLine,
+                display: '❌ 号码超出1-49范围：' + num
+            };
+        }
+    }
+
+    if (/各[^\d]/.test(line) && !/各组/.test(line)) {
         return {
             type: 'error',
             category: 'other',
@@ -1434,7 +1462,10 @@ if (pendingNumbers.length > 0) {
 
     for (const line of lines) {
         // ⭐ 单式行（含 二中二/三中三/平码/平特 且含 /）不转换符号，保护 / 语法
-        const isSingleStyle = /(二中二|三中三|平码|平特|平)/.test(line) && line.includes('/');
+        const isSingleStyle = (
+    /(二中二|三中三|平码|平特|平)/.test(line) ||
+    /^\d+\s*[\/#号]\s*\d+$/.test(line.trim())
+) && line.includes('/');
         
         let cleanedLine;
         if (isSingleStyle) {
