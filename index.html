@@ -2113,6 +2113,28 @@ setInterval(checkNewDay, 1000);
     setInterval(scheduler, 1000);
     scheduler();
 
+    // ⭐ 21:33 ~ 21:37 每 3 秒自动刷新新澳开奖区
+    window._lastRefreshMark = '';
+    setInterval(function() {
+        var now = new Date();
+        var h = now.getHours();
+        var m = now.getMinutes();
+        var s = now.getSeconds();
+
+        if (h === 21 && m >= 33 && m <= 37) {
+            var mark = h + ':' + m + ':' + Math.floor(s / 3);
+            if (mark !== window._lastRefreshMark) {
+                window._lastRefreshMark = mark;
+                console.log('⏰ ' + h + ':' + m + ':' + s + ' 自动刷新开奖区');
+                fetchAndDisplayLottery(true, true);
+            }
+        }
+
+        if (h === 0 && m === 0 && s < 5) {
+            window._lastRefreshMark = '';
+        }
+    }, 1000);
+
     console.log('✅ 投注计算器已启动');
     console.log('📺 直播控制: 21:33 显示，21:35 结束');
 };
