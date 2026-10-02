@@ -1235,7 +1235,7 @@ if (zodiacMultiNumMatch) {
         for (const ch of tailStr) {
             const d = parseInt(ch);
             if (!isNaN(d)) {
-                if (d === 0) { numbers = numbers.concat([0, 10, 20, 30, 40]); } else {
+                if (d === 0) { numbers = numbers.concat([10, 20, 30, 40]); } else {
                     for (let n = d; n <= 49; n += 10) numbers.push(n);
                 }
             }
