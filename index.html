@@ -396,7 +396,12 @@ margin: 0 1px;
 
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
-    <iframe id="liveIframe" src="https://v.jscdns.app:8088/indexa.html?type=amo" style="width:100%;height:100px;border:none;display:block;" allowfullscreen loading="lazy"></iframe>
+    <!-- 把这里的高度改成 500 -->
+    <div id="liveScaler" style="width:720px;height:500px;position:relative;overflow:hidden;transform-origin:top left;">
+        <iframe id="liveIframe" src="https://6.0006-6-676.cc/yjjy/live.html"
+            style="width:720px;height:1200px;border:none;display:block;position:absolute;top:-121px;left:0;"
+            allowfullscreen loading="lazy"></iframe>
+    </div>
 </div>
 
 
@@ -500,8 +505,8 @@ const ODDS = {
     'special': 47, 'zhengma': 7, 'pingte_zodiac': 2, 'pingte_zodiac_ma': 1.8,
     'pingte_tail': 1.8, 'pingte_tail_0': 2,
     'combo_zodiac_2': 4, 'combo_zodiac_2_ma': 3.5,
-    'combo_zodiac_3': 10, 'combo_zodiac_3_ma': 8,
-    'combo_zodiac_4': 30, 'combo_zodiac_4_ma': 27,
+    'combo_zodiac_3': 10, 'combo_zodiac_3_ma': 9,
+    'combo_zodiac_4': 30, 'combo_zodiac_4_ma': 28,
     'combo_zodiac_5': 100, 'combo_zodiac_5_ma': 80,
     'combo_tail_2': 3, 'combo_tail_3': 7, 'combo_tail_4': 15,
     'not_hit_5': 2,     // 五不中 2倍
@@ -999,7 +1004,7 @@ function parseBet(line) {
         const price = parseInt(pingTeTailSlashMatch[3]);
         const items = tailStr.split('').map(Number);
         const total = items.length * price;
-        return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: price, amount: total, display: items.length + '个尾数 × ' + price + '元 = ' + total + '元', raw: originalLine };
+       return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: price, amount: total, isTailBet: true, display: items.length + '个尾数 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
 const pingTeSlashMatch = line.match(/^(?:平特一肖|平一肖|平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?\s*[\/]?\s*(\d+)$/);
@@ -1023,13 +1028,13 @@ if (pingTeSlashMatch) {
         let cleanLine = line.replace(/\s/g, '');
         let tailMatch = cleanLine.match(/平特?尾?(\d+)尾各?(\d+)$/);
         if (!tailMatch) { tailMatch = cleanLine.match(/平特?尾(\d+)各?(\d+)$/); }
-        if (tailMatch) {
-            const tailStr = tailMatch[1];
-            const amt = parseInt(tailMatch[2]);
-            const items = tailStr.split('').map(Number);
-            const total = items.length * amt;
-            return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: amt, amount: total, display: items.length + '个尾数 × ' + amt + '元 = ' + total + '元', raw: originalLine };
-        }
+if (tailMatch) {
+    const tailStr = tailMatch[1];
+    const amt = parseInt(tailMatch[2]);
+    const items = tailStr.split('').map(Number);
+    const total = items.length * amt;
+    return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: amt, amount: total, isTailBet: true, display: items.length + '个尾数 × ' + amt + '元 = ' + total + '元', raw: originalLine };
+}
         const m = line.match(/(\d+)$/);
         if (m) {
             const amt = parseInt(m[1]);
@@ -1235,7 +1240,7 @@ if (zodiacMultiNumMatch) {
         for (const ch of tailStr) {
             const d = parseInt(ch);
             if (!isNaN(d)) {
-                if (d === 0) { numbers = numbers.concat([10, 20, 30, 40]); } else {
+                if (d === 0) { numbers = numbers.concat([0, 10, 20, 30, 40]); } else {
                     for (let n = d; n <= 49; n += 10) numbers.push(n);
                 }
             }
@@ -1621,9 +1626,18 @@ if (pendingNumbers.length > 0) {
         }
     }
 
-    const waterRate = getWaterRate() / 100;
-    const shuiQian = total * waterRate;
-    const shuiQianDisplay = shuiQian.toFixed(2);
+const waterRate = getWaterRate() / 100;
+const tailWaterRate = 0.005;
+
+let tailTotal = 0;
+for (const bet of history) {
+    if (bet.isTailBet) {
+        tailTotal += bet.amount;
+    }
+}
+const normalTotal = total - tailTotal;
+const shuiQian = normalTotal * waterRate + tailTotal * tailWaterRate;
+const shuiQianDisplay = shuiQian.toFixed(2);
 
     let specialWin = 0;
     let otherWin = 0;
@@ -2109,36 +2123,19 @@ function scheduler() {
 
 window.onload = function() {
 // ===== 直播控制 =====
-var liveWrapper = document.getElementById('liveWrapper');
-var liveIframe = document.getElementById('liveIframe');
+
 
 function checkShowLive() {
-    var now = new Date();
-    var totalSec = now.getHours() * 3600 + now.getMinutes() * 60 + now.getSeconds();
-    
-    var START_HOUR = 21, START_MIN = 32, START_SEC = 50;
-    var END_HOUR = 21, END_MIN = 34, END_SEC = 30;
-    
-    var startSec = START_HOUR * 3600 + START_MIN * 60 + START_SEC;
-    var endSec = END_HOUR * 3600 + END_MIN * 60 + END_SEC;
-    
-    var isLiveTime = false;
-    if (startSec < endSec) {
-        if (totalSec >= startSec && totalSec < endSec) {
-            isLiveTime = true;
-        }
-    }
-    
-    if (isLiveTime) {
-        liveIframe.style.display = 'block';
-        liveIframe.style.height = (liveWrapper.clientWidth * 0.6) + 'px';
-    } else {
-        // 不隐藏，只设置高度
-        liveIframe.style.height = (liveWrapper.clientWidth * 0.6) + 'px';
-    }
+    var wrap = document.getElementById('liveWrapper');
+    var scaler = document.getElementById('liveScaler');
+    if (!wrap || !scaler) return;
+    var s = Math.min(wrap.clientWidth / 720, 1);
+    scaler.style.transform = 'scale(' + s + ')';
+    wrap.style.height = (400 * s) + 'px';
 }
 
 checkShowLive();
+window.addEventListener('resize', checkShowLive);
 setInterval(checkShowLive, 1000);
 
 // 加载历史记录
@@ -2151,23 +2148,7 @@ document.getElementById('saveHistoryBtn').addEventListener('click', saveCurrentR
 // 每秒检查是否跨天
 setInterval(checkNewDay, 1000);
 
-    // ===== 监听 iframe 发来的高度 =====
-    window.addEventListener('message', function(e) {
-        var d = e.data;
-        if (!d || typeof d !== 'object') return;
-        if (d.type !== 'iframeHeight') return;
 
-        var h = parseInt(d.height);
-        if (!h || h < 100) return;
-
-        var moIframe = document.getElementById('liveIframe');
-
-
-        if (moIframe && e.source === moIframe.contentWindow) {
-            moIframe.style.height = h + 'px';
-        }
-
-    });
     // ===== 粘贴按钮 =====
     document.getElementById('pasteBtn').addEventListener('click', pasteAndAppend);
 
