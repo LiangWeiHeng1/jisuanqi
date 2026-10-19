@@ -393,14 +393,14 @@ margin: 0 1px;
 
 
 
-
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
-    <!-- 把这里的高度改成 500 -->
-    <div id="liveScaler" style="width:720px;height:500px;position:relative;overflow:hidden;transform-origin:top left;">
-        <iframe id="liveIframe" src="https://6.0006-6-676.cc/yjjy/live.html"
-            style="width:720px;height:1200px;border:none;display:block;position:absolute;top:-121px;left:0;"
-            allowfullscreen loading="lazy"></iframe>
+    <!-- 把宽度和高度改成真实的 1164 和 384 -->
+    <div id="liveScaler" style="width:1164px;height:384px;position:relative;overflow:hidden;transform-origin:top left;">
+        <!-- top 依然是 -357 -->
+        <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
+            style="width:1164px;height:1200px;border:none;display:block;position:absolute;top:-357px;left:0;pointer-events:none;"
+            scrolling="no" allowfullscreen loading="lazy"></iframe>
     </div>
 </div>
 
@@ -2124,14 +2124,17 @@ function scheduler() {
 window.onload = function() {
 // ===== 直播控制 =====
 
-
 function checkShowLive() {
     var wrap = document.getElementById('liveWrapper');
     var scaler = document.getElementById('liveScaler');
     if (!wrap || !scaler) return;
-    var s = Math.min(wrap.clientWidth / 720, 1);
+    
+    // 这次按照真实的 1164 宽度来算比例
+    var s = Math.min(wrap.clientWidth / 1164, 1);
     scaler.style.transform = 'scale(' + s + ')';
-    wrap.style.height = (400 * s) + 'px';
+    
+    // 高度永远是 384 乘以比例
+    wrap.style.height = (384 * s) + 'px'; 
 }
 
 checkShowLive();
