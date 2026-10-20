@@ -5,332 +5,50 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>投注计算器 · 开奖数据 · 直播</title>
     <style>
-
-.kj-box {
-    width: 100%;
-    display: flex;
-    align-items: stretch;
-}
-
-.kj-l {
-    flex: 1;
-    min-width: 0;
-}
-
-.kj-r {
-    flex: 0 0 15%;
-    min-width: 0;
-}
-
-.kj-box table {
-    width: 100%;
-    border-collapse: collapse;
-    table-layout: fixed;
-}
-
-.kj-box th,
-.kj-box td {
-    padding: 0;
-    margin: 0;
-}
-
-.kj-box .o {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0;
-    color: #fff;
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 1;
-    background: #0000ff;
-}
-
-.kj-box .txt {
-    width: 100%;
-    text-align: center;
-    padding: 6px 0;
-    font-size: 14px;
-    color: #1a2332;
-    background: #fff;
-    line-height: 1;
-}
-
-
-.kj-box table {
-    width: 100%;
-    border-collapse: separate;   /* ⭐ 改成 separate */
-    border-spacing: 2px 0;       /* ⭐ 水平 2px 间隙 */
-    table-layout: fixed;
-}
-.kj-box th, .kj-box td { padding: 0 1px;; margin: 0; }
-
-.kj-box .o {
-    width: calc(100% - 2px);
-margin: 0 1px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 8px 0;
-    color: #fff;
-    font-weight: 700;
-    font-size: 20px;
-    line-height: 1;
-    background: #0000ff;
-}
-
-.kj-box .txt {
-    width: calc(100% - 2px);
-    margin: 0 1px;
-    text-align: center;
-    padding: 6px 0;
-    font-size: 14px;
-    color: #1a2332;
-    background: #fff;
-    line-height: 1;
-}
-
-
+        .kj-box { width: 100%; display: flex; align-items: stretch; }
+        .kj-l { flex: 1; min-width: 0; }
+        .kj-r { flex: 0 0 15%; min-width: 0; }
+        .kj-box table { width: 100%; border-collapse: separate; border-spacing: 2px 0; table-layout: fixed; }
+        .kj-box th, .kj-box td { padding: 0 1px; margin: 0; }
+        .kj-box .o { width: calc(100% - 2px); margin: 0 1px; display: flex; align-items: center; justify-content: center; padding: 8px 0; color: #fff; font-weight: 700; font-size: 20px; line-height: 1; background: #0000ff; }
+        .kj-box .txt { width: calc(100% - 2px); margin: 0 1px; text-align: center; padding: 6px 0; font-size: 14px; color: #1a2332; background: #fff; line-height: 1; }
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-            background: #f0f2f5; 
-            padding: 12px; 
-            max-width: 900px; 
-            margin: 0 auto; 
-        }
-        .container { 
-            background: #ffffff; 
-            border-radius: 16px; 
-            padding: 16px 18px; 
-            box-shadow: 0 2px 16px rgba(0,0,0,0.08); 
-        }
-        h1 { 
-            font-size: 20px; 
-            color: #1a2332; 
-            margin-bottom: 4px; 
-        }
-        .lottery-info { 
-            background: linear-gradient(135deg, #f8f9fb 0%, #eef1f5 100%); 
-            border-radius: 12px; 
-            padding: 12px 14px; 
-            margin-bottom: 14px; 
-            border: 1px solid #e2e6ea; 
-        }
-        .lottery-header { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            margin-bottom: 10px; 
-            padding-bottom: 6px; 
-            border-bottom: 1px solid #dce1e8; 
-            flex-wrap: wrap; 
-            gap: 4px; 
-        }
-        .lottery-date { 
-            font-size: 15px; 
-            font-weight: 700; 
-            color: #1a2332; 
-        }
-        .lottery-period { 
-            font-size: 13px; 
-            font-weight: 600; 
-            color: #4f7cff; 
-            background: #e8edff; 
-            padding: 2px 12px; 
-            border-radius: 12px; 
-        }
-        .lottery-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 12px; 
-            flex-wrap: wrap; 
-        }
-        .lottery-numbers { 
-            display: flex !important; 
-            flex-direction: row !important; 
-            flex-wrap: nowrap !important; 
-            gap: clamp(2px, 0.8vw, 6px) !important; 
-            align-items: center !important; 
-            min-height: auto !important; 
-            flex: 1; 
-            justify-content: space-between !important; 
-        }
-        .number-box { 
-            display: flex; 
-            flex-direction: column; 
-            align-items: center; 
-            justify-content: center; 
-            flex-shrink: 1 !important; 
-            flex-grow: 1 !important; 
-            width: auto !important; 
-            height: auto !important; 
-            aspect-ratio: 1 / 1; 
-            max-width: clamp(32px, 10.5vw, 56px) !important; 
-            border-radius: clamp(6px, 2vw, 12px) !important; 
-            border: 2px solid #e2e6ea; 
-            background: #ffffff; 
-            box-shadow: 0 2px 4px rgba(0,0,0,0.04); 
-            transition: all 0.3s ease; 
-        }
-        .number-box .num { 
-            font-size: clamp(12px, 4vw, 20px) !important; 
-            font-weight: 700; 
-            color: #1a2332; 
-            line-height: 1.1; 
-        }
-        .number-box .draw-txt { 
-            font-size: clamp(7px, 2.5vw, 12px) !important; 
-            color: #4a5a72; 
-            line-height: 1.1; 
-        }
-        .number-box.blue-ball { border-color: #1565c0; background: #e3f0ff; }
-        .number-box.red-ball { border-color: #c62828; background: #ffe8e8; }
-        .number-box.green-ball { border-color: #2e7d32; background: #e8f5e9; }
-        .number-box.placeholder { border-color: #dce1e8; background: #f8f9fb; opacity: 0.6; }
-        .number-box.placeholder .num, .number-box.placeholder .draw-txt { color: #8895aa; }
-        .special-label { 
-            font-size: clamp(9px, 3vw, 14px) !important; 
-            font-weight: 700; 
-            color: #ff9800; 
-            padding: 0 2px !important; 
-            letter-spacing: 1px; 
-            flex-shrink: 0; 
-        }
-        .number-box.refresh-box { 
-            border-color: #4f7cff; 
-            background: #e8edff; 
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-            border-style: dashed; 
-            flex-shrink: 1 !important; 
-            flex-grow: 1 !important; 
-            width: auto !important; 
-            height: auto !important; 
-            aspect-ratio: 1 / 1; 
-            max-width: clamp(26px, 8.5vw, 48px) !important; 
-        }
-        .number-box.refresh-box:hover { background: #d0ddff; transform: scale(1.05); }
-        .number-box.refresh-box:active { transform: scale(0.95); }
-        .number-box.refresh-box .refresh-text { 
-            font-size: clamp(7px, 2.2vw, 11px) !important; 
-            font-weight: 600; 
-            color: #4f7cff; 
-            line-height: 1.1; 
-            text-align: center; 
-        }
-        .number-box.refresh-box .refresh-icon { 
-            font-size: clamp(10px, 3.2vw, 16px) !important; 
-        }
-        .number-box.refresh-box:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
-        .lottery-loading { text-align: center; color: #8895aa; font-size: 13px; padding: 10px 0; width: 100%; }
-        .lottery-error { text-align: center; color: #ff5e5e; font-size: 13px; padding: 10px 0; width: 100%; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f0f2f5; padding: 12px; max-width: 900px; margin: 0 auto; }
+        .container { background: #ffffff; border-radius: 16px; padding: 16px 18px; box-shadow: 0 2px 16px rgba(0,0,0,0.08); }
+        h1 { font-size: 20px; color: #1a2332; margin-bottom: 4px; }
+        .lottery-info { background: linear-gradient(135deg, #f8f9fb 0%, #eef1f5 100%); border-radius: 12px; padding: 12px 14px; margin-bottom: 14px; border: 1px solid #e2e6ea; }
+        .lottery-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #dce1e8; flex-wrap: wrap; gap: 4px; }
+        .lottery-date { font-size: 15px; font-weight: 700; color: #1a2332; }
+        .lottery-period { font-size: 13px; font-weight: 600; color: #4f7cff; background: #e8edff; padding: 2px 12px; border-radius: 12px; }
         .input-area { display: flex; gap: 10px; margin-bottom: 8px; flex-wrap: wrap; }
-        .input-area textarea { 
-            flex: 1; 
-            min-width: 180px; 
-            padding: 10px 12px; 
-            border: 1.5px solid #dce1e8; 
-            border-radius: 10px; 
-            font-size: 14px; 
-            resize: none; 
-            min-height: 60px; 
-            overflow: hidden; 
-            font-family: inherit; 
-            transition: border-color 0.2s; 
-            background: #fafbfc; 
-            line-height: 1.7; 
-        }
+        .input-area textarea { flex: 1; min-width: 180px; padding: 10px 12px; border: 1.5px solid #dce1e8; border-radius: 10px; font-size: 14px; resize: none; min-height: 60px; overflow: hidden; font-family: inherit; transition: border-color 0.2s; background: #fafbfc; line-height: 1.7; }
         .input-area textarea:focus { outline: none; border-color: #4f7cff; background: #ffffff; }
-        .water-rate-row { 
-            display: flex; 
-            align-items: center; 
-            gap: 10px; 
-            margin-bottom: 10px; 
-            flex-wrap: wrap; 
-            background: #f8f9fb; 
-            padding: 8px 12px; 
-            border-radius: 8px; 
-            border: 1px solid #eef1f5; 
-        }
+        .water-rate-row { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; flex-wrap: wrap; background: #f8f9fb; padding: 8px 12px; border-radius: 8px; border: 1px solid #eef1f5; }
         .water-rate-row label { font-size: 14px; font-weight: 600; color: #1a2332; }
-        .water-rate-row input[type="number"] { 
-            width: 70px; 
-            padding: 4px 8px; 
-            border: 1.5px solid #dce1e8; 
-            border-radius: 6px; 
-            font-size: 14px; 
-            text-align: center; 
-            background: #ffffff; 
-            transition: border-color 0.2s; 
-        }
+        .water-rate-row input[type="number"] { width: 70px; padding: 4px 8px; border: 1.5px solid #dce1e8; border-radius: 6px; font-size: 14px; text-align: center; background: #ffffff; transition: border-color 0.2s; }
         .water-rate-row input[type="number"]:focus { outline: none; border-color: #4f7cff; }
         .water-rate-row .rate-unit { font-size: 14px; color: #4a5a72; }
-        .btn-group { 
-            display: flex !important; 
-            gap: 4px !important; 
-            flex-wrap: nowrap !important; 
-            margin-bottom: 12px; 
-        }
-        .btn { 
-            padding: 8px 18px; 
-            border: none; 
-            border-radius: 8px; 
-            font-size: 14px; 
-            font-weight: 600; 
-            cursor: pointer; 
-            transition: all 0.2s ease; 
-        }
-        .btn-group .btn { 
-            flex: 1 !important; 
-            padding: 10px 2px !important; 
-            font-size: clamp(10px, 2.8vw, 14px) !important; 
-            white-space: nowrap !important; 
-        }
+        .btn-group { display: flex !important; gap: 4px !important; flex-wrap: nowrap !important; margin-bottom: 12px; }
+        .btn { padding: 8px 18px; border: none; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .btn-group .btn { flex: 1 !important; padding: 10px 2px !important; font-size: clamp(10px, 2.8vw, 14px) !important; white-space: nowrap !important; }
         .btn-success { background: #28a745; color: #fff; }
         .btn-success:hover { background: #1e7e34; }
         .btn-danger { background: #ff5e5e; color: #fff; }
         .btn-danger:hover { background: #e04444; }
         .btn-primary { background: #4f7cff; color: #fff; }
         .btn-primary:hover { background: #3a63d8; }
-        .result-box { 
-            background: #f8f9fb; 
-            border-radius: 12px; 
-            padding: 14px 16px; 
-            margin: 12px 0 16px 0; 
-            border: 1px solid #eef1f5; 
-            min-height: 60px; 
-            font-size: 14px; 
-            line-height: 1.8; 
-            word-break: break-all; 
-        }
+        .result-box { background: #f8f9fb; border-radius: 12px; padding: 14px 16px; margin: 12px 0 16px 0; border: 1px solid #eef1f5; min-height: 60px; font-size: 14px; line-height: 1.8; word-break: break-all; }
         .result-box .empty-result { color: #8895aa; font-size: 13px; }
         .history { border-top: 1px solid #eef1f5; padding-top: 12px; }
         .history-title { font-size: 13px; font-weight: 600; color: #1a2332; margin-bottom: 8px; }
-        .history-item { 
-            display: flex; 
-            flex-direction: column; 
-            padding: 8px 0; 
-            border-bottom: 1px solid #f0f2f5; 
-            gap: 3px; 
-        }
+        .history-item { display: flex; flex-direction: column; padding: 8px 0; border-bottom: 1px solid #f0f2f5; gap: 3px; }
         .history-item .h-text { font-size: 14px; color: #1a2332; word-break: break-all; font-weight: 500; }
         .history-item .h-detail { font-size: 12px; color: #4f7cff; word-break: break-all; }
         .history-item .h-win { font-size: 12px; color: #2e7d32; word-break: break-all; }
         .history-item .h-lose { font-size: 12px; color: #c62828; word-break: break-all; }
         .history-item .h-error { color: #ff5e5e; font-weight: 400; }
         .empty-history { color: #8895aa; font-size: 13px; text-align: center; padding: 16px 0; }
-        .status-bar { 
-            display: flex; 
-            justify-content: space-between; 
-            align-items: center; 
-            flex-wrap: wrap; 
-            gap: 6px; 
-            font-size: 12px; 
-            color: #8895aa; 
-            margin-top: 8px; 
-        }
+        .status-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 12px; color: #8895aa; margin-top: 8px; }
     </style>
 </head>
 <body>
@@ -393,13 +111,17 @@ margin: 0 1px;
 
 
 
+
 <!-- 新澳直播 -->
-<div id="liveWrapper" style="width:100%;max-width:720px;margin:0 auto;border-radius:12px;overflow:hidden;background:#000;position:relative;">
-    <!-- 把宽度和高度改成真实的 1164 和 384 -->
-    <div id="liveScaler" style="width:1164px;height:384px;position:relative;overflow:hidden;transform-origin:top left;">
-        <!-- top 依然是 -357 -->
+<div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#f0f2f5; position:relative;">
+    <!-- 容器保持 1177 的原始比例，高 486 -->
+    <div id="liveScaler" style="width:1177px; height:486px; position:relative; overflow:hidden; transform-origin:top left;">
+        <!-- 
+            top: -258px 是精准切掉上面导航栏的偏移量。
+            没有左侧偏移，完全靠左。
+        -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
-            style="width:1164px;height:1200px;border:none;display:block;position:absolute;top:-357px;left:0;pointer-events:none;"
+            style="width:1177px; height:1500px; border:none; display:block; position:absolute; top:-258px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
     </div>
 </div>
@@ -509,64 +231,32 @@ const ODDS = {
     'combo_zodiac_4': 30, 'combo_zodiac_4_ma': 28,
     'combo_zodiac_5': 100, 'combo_zodiac_5_ma': 80,
     'combo_tail_2': 3, 'combo_tail_3': 7, 'combo_tail_4': 15,
-    'not_hit_5': 2,     // 五不中 2倍
-    'not_hit_6': 2.5,   // 六不中 2.5倍  ⭐ 新增
-    'not_hit_10': 4.5   // 十不中 4.5倍
+    'not_hit_5': 2, 'not_hit_6': 2.5, 'not_hit_10': 4.5
 };
 
-// ================================================================
-// 五不中 / 六不中 / 十不中 解析（支持各种符号）
-// ================================================================
-
 function parseNotHit(line) {
-    // 匹配格式：各种符号分隔的数字 + 五不中/六不中/十不中 + 金额
     const match = line.match(/^([\d.、，,。\s\/\-#]+)(五不中|六不中|十不中)\s*(\d+)$/);
     if (!match) return null;
-    
     const numStr = match[1];
     const type = match[2];
     const amount = parseInt(match[3]);
-    
-    // 提取所有数字（支持各种分隔符）
     const nums = numStr.match(/\d+/g);
     if (!nums || nums.length === 0) return null;
     const numbers = nums.map(Number);
     
     const isFive = type === '五不中';
-    const isSix = type === '六不中';   // ⭐ 新增
+    const isSix = type === '六不中';
     const isTen = type === '十不中';
     
-    // 验证数字个数
-    if (isFive && numbers.length !== 5) {
-        return {
-            type: 'error',
-            category: 'other',
-            raw: line,
-            display: '❌ 五不中需要5个数字，当前' + numbers.length + '个'
-        };
-    }
-    if (isSix && numbers.length !== 6) {   // ⭐ 新增
-        return {
-            type: 'error',
-            category: 'other',
-            raw: line,
-            display: '❌ 六不中需要6个数字，当前' + numbers.length + '个'
-        };
-    }
-    if (isTen && numbers.length !== 10) {
-        return {
-            type: 'error',
-            category: 'other',
-            raw: line,
-            display: '❌ 十不中需要10个数字，当前' + numbers.length + '个'
-        };
-    }
+    if (isFive && numbers.length !== 5) return { type: 'error', category: 'other', raw: line, display: '❌ 五不中需要5个数字，当前' + numbers.length + '个' };
+    if (isSix && numbers.length !== 6) return { type: 'error', category: 'other', raw: line, display: '❌ 六不中需要6个数字，当前' + numbers.length + '个' };
+    if (isTen && numbers.length !== 10) return { type: 'error', category: 'other', raw: line, display: '❌ 十不中需要10个数字，当前' + numbers.length + '个' };
     
-    const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');   // ⭐ 修改
+    const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');
     const displayText = numbers.join(',') + ' ' + typeName + ' ' + amount + '元 (全不中才赢)';
     
     return {
-        type: isFive ? 'not_hit_5' : (isSix ? 'not_hit_6' : 'not_hit_10'),   // ⭐ 修改
+        type: isFive ? 'not_hit_5' : (isSix ? 'not_hit_6' : 'not_hit_10'),
         category: 'other',
         numbers: numbers,
         amount: amount,
@@ -576,36 +266,27 @@ function parseNotHit(line) {
     };
 }
 
-// ================================================================
-// 五不中 / 六不中 / 十不中 中奖计算
-// ================================================================
-
 function calcNotHitWin(bet, result) {
     if (!result) return { winAmount: 0, detail: '无开奖结果' };
-    
     const openCodes = result.codes || [];
-    const allCodes = openCodes; // 全部7个号码（6平码+特码）
+    const allCodes = openCodes;
     const betNumbers = bet.numbers || [];
     const unitPrice = bet.unitPrice || bet.amount || 0;
-    
-    // 检查是否有任何一个投注数字出现在开奖号码中
     const hitNumbers = betNumbers.filter(num => allCodes.includes(num));
     const hitCount = hitNumbers.length;
     
     if (hitCount === 0) {
-        // 全不中 → 中奖
         const isFive = bet.type === 'not_hit_5';
-        const isSix = bet.type === 'not_hit_6';   // ⭐ 新增
-        const odds = isFive ? 2 : (isSix ? 2.5 : 4.5);   // ⭐ 修改
+        const isSix = bet.type === 'not_hit_6';
+        const odds = isFive ? 2 : (isSix ? 2.5 : 4.5);
         const winAmount = unitPrice * odds;
-        const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');   // ⭐ 修改
+        const typeName = isFive ? '五不中' : (isSix ? '六不中' : '十不中');
         return {
             winAmount: winAmount,
             detail: '✅ 全不中！' + betNumbers.join(',') + ' 均未开出 → ' + unitPrice + '×' + odds + '倍=' + winAmount + '元'
         };
     } else {
-        // 有数字中了 → 输
-        const typeName = bet.type === 'not_hit_5' ? '五不中' : (bet.type === 'not_hit_6' ? '六不中' : '十不中');   // ⭐ 修改
+        const typeName = bet.type === 'not_hit_5' ? '五不中' : (bet.type === 'not_hit_6' ? '六不中' : '十不中');
         return {
             winAmount: 0,
             detail: '❌ 命中 ' + hitNumbers.join(',') + ' (' + hitCount + '个) → 不中'
@@ -613,174 +294,99 @@ function calcNotHitWin(bet, result) {
     }
 }
 
-// ================================================================
-// 二中二 / 三中三 解析
-// ================================================================
-
 function parseErSan(line) {
-    // 匹配格式：
-    // 单式：二中二1.2/100 或 三中三1.2.3/100
-    // 复式：二中二1.2.3各100 或 三中三1.2.3.4各100
-    // 复式（带前缀）：复式二中二1.2.3各100 或 复式三中三1.2.3.4各100
     const match = line.match(/^(复式)?(二中二|三中三)\s*([\d.、，,\s\-]+?)(?:各|\/)\s*(\d+)$/);
     if (!match) return null;
-    
     const hasFuShi = match[1] !== undefined;
     const type = match[2];
     const numStr = match[3];
     const separator = line.includes('各') ? '各' : '/';
     const amount = parseInt(match[4]);
-    
-    // 提取所有数字
     const nums = numStr.match(/\d+/g);
     if (!nums || nums.length === 0) return null;
     const numbers = nums.map(Number);
-    
     const n = type === '二中二' ? 2 : 3;
-    
-    // 判断单式/复式
     let isSingle = false;
     let isMultiple = false;
     
-    // 1. 有"复式"前缀 → 必须是复式，数字个数必须 > n
     if (hasFuShi) {
-        if (numbers.length <= n) {
-            // 复式前缀但数字不够 → 返回错误对象
-            return {
-                type: 'error',
-                category: 'other',
-                raw: line,
-                display: '❌ 复式' + type + '需要至少' + (n + 1) + '个数字，当前' + numbers.length + '个'
-            };
-        }
-        if (separator !== '各') {
-            return {
-                type: 'error',
-                category: 'other',
-                raw: line,
-                display: '❌ 复式必须用"各"分隔金额'
-            };
-        }
+        if (numbers.length <= n) return { type: 'error', category: 'other', raw: line, display: '❌ 复式' + type + '需要至少' + (n + 1) + '个数字，当前' + numbers.length + '个' };
+        if (separator !== '各') return { type: 'error', category: 'other', raw: line, display: '❌ 复式必须用"各"分隔金额' };
         isMultiple = true;
     } else {
-        // 2. 无"复式"前缀
         if (numbers.length === n) {
-            // 单式
-            if (separator !== '/') {
-                return {
-                    type: 'error',
-                    category: 'other',
-                    raw: line,
-                    display: '❌ 单式' + type + '必须用"/"分隔金额'
-                };
-            }
+            if (separator !== '/') return { type: 'error', category: 'other', raw: line, display: '❌ 单式' + type + '必须用"/"分隔金额' };
             isSingle = true;
         } else if (numbers.length > n) {
-            // 复式
-            if (separator !== '各') {
-                return {
-                    type: 'error',
-                    category: 'other',
-                    raw: line,
-                    display: '❌ 复式' + type + '必须用"各"分隔金额'
-                };
-            }
+            if (separator !== '各') return { type: 'error', category: 'other', raw: line, display: '❌ 复式' + type + '必须用"各"分隔金额' };
             isMultiple = true;
         } else {
-            // 数字不够
-            return {
-                type: 'error',
-                category: 'other',
-                raw: line,
-                display: '❌ ' + type + '需要至少' + n + '个数字，当前' + numbers.length + '个'
-            };
+            return { type: 'error', category: 'other', raw: line, display: '❌ ' + type + '需要至少' + n + '个数字，当前' + numbers.length + '个' };
         }
     }
     
-// 计算总投注额
-let totalAmount = amount;
-if (isMultiple) {
-    const totalGroups = comb(numbers.length, n);
-    totalAmount = totalGroups * amount;  // 总投注额 = 组合数 × 单组金额
-}
+    let totalAmount = amount;
+    if (isMultiple) {
+        const totalGroups = comb(numbers.length, n);
+        totalAmount = totalGroups * amount;
+    }
 
-// 构建 display
-let displayText = '';
-if (isSingle) {
-    displayText = '单式 ' + type + ' ' + numbers.join(',') + ' ' + separator + amount + '元 (必须全中)';
-} else {
-    const totalGroups = comb(numbers.length, n);
-    displayText = type + numbers.join(',') + '各' + amount + '，共' + totalGroups + '组×' + amount + '元=' + totalAmount + '元';
-}
+    let displayText = '';
+    if (isSingle) {
+        displayText = '单式 ' + type + ' ' + numbers.join(',') + ' ' + separator + amount + '元 (必须全中)';
+    } else {
+        const totalGroups = comb(numbers.length, n);
+        displayText = type + numbers.join(',') + '各' + amount + '，共' + totalGroups + '组×' + amount + '元=' + totalAmount + '元';
+    }
 
-return {
-    type: type === '二中二' ? 'erzhonger' : 'sanzhongsan',
-    category: 'other',
-numbers: numbers, 
-    amount: totalAmount,
-    unitAmount: amount,
-    n: n,
-    isSingle: isSingle,
-    isMultiple: isMultiple,
-    display: displayText,
-    raw: line
-};
+    return {
+        type: type === '二中二' ? 'erzhonger' : 'sanzhongsan',
+        category: 'other',
+        numbers: numbers, 
+        amount: totalAmount,
+        unitAmount: amount,
+        n: n,
+        isSingle: isSingle,
+        isMultiple: isMultiple,
+        display: displayText,
+        raw: line
+    };
 }
-// ================================================================
-// 二中二 / 三中三 中奖计算
-// ================================================================
 
 function calcErSanWin(bet, result) {
     if (!result) return { winAmount: 0, detail: '无开奖结果' };
-    
     const openCodes = result.codes || [];
     const pingMa = openCodes.slice(0, 6);
     const numbers = bet.numbers || [];
     const n = bet.n || 2;
     const odds = n === 2 ? 60 : 600;
-    const unitAmount = bet.unitAmount || bet.amount || 0;  // 单组金额
-    
+    const unitAmount = bet.unitAmount || bet.amount || 0;
     const hitNumbers = numbers.filter(num => pingMa.includes(num));
     const hitCount = hitNumbers.length;
     
     if (bet.isSingle) {
         if (hitCount === n) {
-            const win = unitAmount * odds;  // 单式：单组金额 × 赔率
-            return { 
-                winAmount: win, 
-                detail: '全部命中 ' + hitNumbers.join(',') + ' → ' + unitAmount + '×' + odds + '倍=' + win
-            };
+            const win = unitAmount * odds;
+            return { winAmount: win, detail: '全部命中 ' + hitNumbers.join(',') + ' → ' + unitAmount + '×' + odds + '倍=' + win };
         } else {
-            return { 
-                winAmount: 0, 
-                detail: '未中奖(匹配' + hitCount + '/' + n + '个)'
-            };
+            return { winAmount: 0, detail: '未中奖(匹配' + hitCount + '/' + n + '个)' };
         }
     }
     
     if (bet.isMultiple) {
         if (hitCount >= n) {
             const groups = comb(hitCount, n);
-            const win = groups * unitAmount * odds;  // 复式：命中组数 × 单组金额 × 赔率
-            return { 
-                winAmount: win, 
-                detail: '命中' + hitCount + '个 (' + hitNumbers.join(',') + ') → C(' + hitCount + ',' + n + ')=' + groups + '组 × ' + unitAmount + '×' + odds + '倍=' + win
-            };
+            const win = groups * unitAmount * odds;
+            return { winAmount: win, detail: '命中' + hitCount + '个 (' + hitNumbers.join(',') + ') → C(' + hitCount + ',' + n + ')=' + groups + '组 × ' + unitAmount + '×' + odds + '倍=' + win };
         } else {
-            return { 
-                winAmount: 0, 
-                detail: '未中奖(匹配' + hitCount + '个)'
-            };
+            return { winAmount: 0, detail: '未中奖(匹配' + hitCount + '个)' };
         }
     }
-    
     return { winAmount: 0, detail: '未知类型' };
 }
 
 function parseCombo(line) {
     let comboList = [];
-    
-    // ⭐ 第1处：加 g 标志，匹配所有连码
     const allComboMatches = line.match(/([2-5二三四五]+)(?:连|有|友)/g);
     if (!allComboMatches || allComboMatches.length === 0) return null;
     
@@ -798,21 +404,18 @@ function parseCombo(line) {
     }
     
     if (comboList.length === 0) return null;
-    
     let amtStr = '';
     const amtMatch = line.match(/(\d+)$/);
     if (amtMatch) { amtStr = amtMatch[1]; }
     
-    // ⭐ 第2处：加 g 标志，去掉所有连码
     let remainPart = line.replace(/([2-5二三四五]+)(?:连|有|友)/g, '');
     remainPart = remainPart.replace(/(\d+)$/, '');
     remainPart = remainPart.replace(/尾/g, '');
-    remainPart = remainPart.replace(/[各组]/g, '');   // ⭐ 新增：去掉"各""组"字
+    remainPart = remainPart.replace(/[各组]/g, '');
     remainPart = remainPart.replace(/[、，,.\s。！？；;！?、…—·\t\n\r]+/g, '');
     
     let items = [];
     let itemType = '';
-    
     const zodiacItems = remainPart.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g);
     if (zodiacItems && zodiacItems.length > 0) {
         items = zodiacItems;
@@ -838,7 +441,6 @@ function parseCombo(line) {
     }
     
     if (items.length === 0) return null;
-    
     const n = items.length;
     let unitPrice = 1;
     if (amtStr) { unitPrice = parseInt(amtStr); }
@@ -863,7 +465,6 @@ function parseCombo(line) {
         raw: line
     };
 }
-
 
 function parseSpecial(line) {
     const match = line.match(/^(红单|红双|绿单|绿双|蓝单|蓝双|单|双|大|小|红|绿|蓝)(?:各|各数|各号|各码)?\s*(\d+)/);
@@ -894,7 +495,6 @@ function parseSpecial(line) {
     };
 }
 
-
 function parseBet(line) {
     line = line.trim();
     line = line.replace(/^[.、，,\s]+/, '');
@@ -902,7 +502,6 @@ function parseBet(line) {
     if (!line) return null;
     const originalLine = line;
 
-    // ⭐ 单号：01/50、1/100、01#50、01号50
     const simpleNumMatch = line.match(/^(\d+)\s*[\/#号]\s*(\d+)$/);
     if (simpleNumMatch) {
         const num = parseInt(simpleNumMatch[1]);
@@ -920,53 +519,37 @@ function parseBet(line) {
                 raw: originalLine
             };
         } else {
-            return {
-                type: 'error',
-                category: 'other',
-                raw: originalLine,
-                display: '❌ 号码超出1-49范围：' + num
-            };
+            return { type: 'error', category: 'other', raw: originalLine, display: '❌ 号码超出1-49范围：' + num };
         }
     }
 
     if (/各[^\d]/.test(line) && !/各组/.test(line)) {
-        return {
-            type: 'error',
-            category: 'other',
-            raw: originalLine,
-            display: '❌ "各"后面必须直接跟数字，不能有符号或空格'
-        };
+        return { type: 'error', category: 'other', raw: originalLine, display: '❌ "各"后面必须直接跟数字，不能有符号或空格' };
     }
+    
     const ignoreChars = ['特', '奥', '澳', '新', '复', '式', '特奥', '奥特', '元','码','数', '门','米','斤'];
     for (const ch of ignoreChars) {
         line = line.replaceAll(ch, '');
     }
     line = line.replace(/\s+/g, ' ').trim();
     line = line.replace(/[：:]/g, '/');
-    // 生肖行检查
+    
     const chineseChars = line.match(/[\u4e00-\u9fa5]/g);
     if (chineseChars) {
         const correctZodiacs = '鼠牛虎兔龙蛇马羊猴鸡狗猪';
         const hasZodiac = chineseChars.some(ch => correctZodiacs.includes(ch));
         if (hasZodiac) {
-            const allowChars = '平各连有友二三四五特一肖组';   // ⭐ 加入"组"
+            const allowChars = '平各连有友二三四五特一肖组';
             const wrongChars = chineseChars.filter(ch => !correctZodiacs.includes(ch) && !allowChars.includes(ch));
             if (wrongChars.length > 0) {
-                return {
-                    type: 'error',
-                    category: 'other',
-                    raw: originalLine,
-                    display: '❌ 生肖写错'
-                };
+                return { type: 'error', category: 'other', raw: originalLine, display: '❌ 生肖写错' };
             }
         }
     }
 
-    // 先检测五不中/六不中/十不中（放在最前面，优先匹配）
     const notHitResult = parseNotHit(line);
     if (notHitResult) return notHitResult;
 
-    // 检测二中二/三中三
     const erSanResult = parseErSan(line);
     if (erSanResult) return erSanResult;
 
@@ -1007,14 +590,14 @@ function parseBet(line) {
        return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: price, amount: total, isTailBet: true, display: items.length + '个尾数 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-const pingTeSlashMatch = line.match(/^(?:平特一肖|平一肖|平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?\s*[\/]?\s*(\d+)$/);
-if (pingTeSlashMatch) {
-    const zodiacStr = pingTeSlashMatch[1];
-    const price = parseInt(pingTeSlashMatch[2]);
-    const items = zodiacStr.split('');
-    const total = items.length * price;
-    return { type: 'pingte_zodiac', category: 'other', items: items, itemType: '生肖', unitPrice: price, amount: total, display: items.length + '个生肖 × ' + price + '元 = ' + total + '元', raw: originalLine };
-}
+    const pingTeSlashMatch = line.match(/^(?:平特一肖|平一肖|平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?\s*[\/]?\s*(\d+)$/);
+    if (pingTeSlashMatch) {
+        const zodiacStr = pingTeSlashMatch[1];
+        const price = parseInt(pingTeSlashMatch[2]);
+        const items = zodiacStr.split('');
+        const total = items.length * price;
+        return { type: 'pingte_zodiac', category: 'other', items: items, itemType: '生肖', unitPrice: price, amount: total, display: items.length + '个生肖 × ' + price + '元 = ' + total + '元', raw: originalLine };
+    }
 
     if (/^(平特|平)/.test(line)) {
         const fm = line.match(/^(平特|平)([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)各?(\d+)$/);
@@ -1028,13 +611,13 @@ if (pingTeSlashMatch) {
         let cleanLine = line.replace(/\s/g, '');
         let tailMatch = cleanLine.match(/平特?尾?(\d+)尾各?(\d+)$/);
         if (!tailMatch) { tailMatch = cleanLine.match(/平特?尾(\d+)各?(\d+)$/); }
-if (tailMatch) {
-    const tailStr = tailMatch[1];
-    const amt = parseInt(tailMatch[2]);
-    const items = tailStr.split('').map(Number);
-    const total = items.length * amt;
-    return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: amt, amount: total, isTailBet: true, display: items.length + '个尾数 × ' + amt + '元 = ' + total + '元', raw: originalLine };
-}
+        if (tailMatch) {
+            const tailStr = tailMatch[1];
+            const amt = parseInt(tailMatch[2]);
+            const items = tailStr.split('').map(Number);
+            const total = items.length * amt;
+            return { type: 'pingte_tail', category: 'other', items: items, itemType: '尾数', unitPrice: amt, amount: total, isTailBet: true, display: items.length + '个尾数 × ' + amt + '元 = ' + total + '元', raw: originalLine };
+        }
         const m = line.match(/(\d+)$/);
         if (m) {
             const amt = parseInt(m[1]);
@@ -1083,45 +666,24 @@ if (tailMatch) {
         return { type: 'expand', category: 'special', items: numbers, itemType: '号码(数字+生肖合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
 
-// ⭐ 去掉嵌套量词，避免正则回溯卡死
-const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪][鼠牛虎兔龙蛇马羊猴鸡狗猪\d\s.、，,\-#+@%&*|~]*?)(?:各数|各号|各码|各)\s*(\d+)$/);
-if (zodiacMultiNumMatch) {
-    const zodiacStr = zodiacMultiNumMatch[1];
-    const price = parseInt(zodiacMultiNumMatch[2]);   // ⭐ 注意：金额变成第 2 组
-
-    let numbers = [];
-
-    // 1. 生肖展开成号码（提取所有生肖字）
-    const zodiacItems = zodiacStr.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g) || [];
-    for (const ch of zodiacItems) {
-        const nums = ZODIAC_TO_NUMBERS[ch] || [];
-        numbers = numbers.concat(nums);
+    const zodiacMultiNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪][鼠牛虎兔龙蛇马羊猴鸡狗猪\d\s.、，,\-#+@%&*|~]*?)(?:各数|各号|各码|各)\s*(\d+)$/);
+    if (zodiacMultiNumMatch) {
+        const zodiacStr = zodiacMultiNumMatch[1];
+        const price = parseInt(zodiacMultiNumMatch[2]);
+        let numbers = [];
+        const zodiacItems = zodiacStr.match(/[鼠牛虎兔龙蛇马羊猴鸡狗猪]/g) || [];
+        for (const ch of zodiacItems) {
+            const nums = ZODIAC_TO_NUMBERS[ch] || [];
+            numbers = numbers.concat(nums);
+        }
+        const extraNums = zodiacStr.match(/\d+/g) || [];
+        for (const n of extraNums) {
+            numbers.push(parseInt(n));
+        }
+        const count = numbers.length;
+        const total = count * price;
+        return { type: 'expand', category: 'special', items: numbers, itemType: '号码(生肖+数字合并)', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
     }
-
-    // 2. 如果 zodiacStr 里还有数字，也加进去（兼容 牛2.5.6 这种写法）
-    const extraNums = zodiacStr.match(/\d+/g) || [];
-    for (const n of extraNums) {
-        numbers.push(parseInt(n));
-    }
-
-
-
-    // 3. 不去重，有多少算多少
-    const count = numbers.length;
-    const total = count * price;
-
-    return {
-        type: 'expand',
-        category: 'special',
-        items: numbers,
-        itemType: '号码(生肖+数字合并)',
-        unitPrice: price,
-        count: count,
-        amount: total,
-        display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元',
-        raw: originalLine
-    };
-}
 
     const zodiacSepNumMatch = line.match(/^([鼠牛虎兔龙蛇马羊猴鸡狗猪]+)(?:[^鼠牛虎兔龙蛇马羊猴鸡狗猪\d]+)(\d+)(?:各数|各号|各码|各)?\s*(\d+)$/);
     if (zodiacSepNumMatch) {
@@ -1257,18 +819,8 @@ if (zodiacMultiNumMatch) {
         const nums = ns.match(/\d+/g);
         if (nums && nums.length > 0) {
             const numbers = nums.map(Number);
-            
-            // 校验号码范围 1-49
             const invalidNums = numbers.filter(n => n < 1 || n > 49);
-            if (invalidNums.length > 0) {
-                return {
-                    type: 'error',
-                    category: 'other',
-                    raw: line,
-                    display: '❌ 号码超出1-49范围：' + invalidNums.join('、')
-                };
-            }
-            
+            if (invalidNums.length > 0) return { type: 'error', category: 'other', raw: line, display: '❌ 号码超出1-49范围：' + invalidNums.join('、') };
             const count = numbers.length;
             const total = count * price;
             return { type: 'expand', category: 'special', items: numbers, itemType: '号码', unitPrice: price, count: count, amount: total, display: '共 ' + count + ' 个号码 × ' + price + '元 = ' + total + '元', raw: originalLine };
@@ -1290,12 +842,10 @@ function calcBetWin(bet, result) {
     const teMa = openCodes.length > 0 ? openCodes[openCodes.length - 1] : null;
     const allCodes = openCodes;
 
-    // 检测五不中/六不中/十不中
-    if (bet.type === 'not_hit_5' || bet.type === 'not_hit_6' || bet.type === 'not_hit_10') {   // ⭐ 修改
+    if (bet.type === 'not_hit_5' || bet.type === 'not_hit_6' || bet.type === 'not_hit_10') {
         return calcNotHitWin(bet, result);
     }
 
-    // 检测二中二/三中三
     if (bet.type === 'erzhonger' || bet.type === 'sanzhongsan') {
         return calcErSanWin(bet, result);
     }
@@ -1464,12 +1014,8 @@ function getWaterRate() {
     return parseFloat(input.value) || 0;
 }
 
-// ================================================================
-// 自动分行：只针对纯数字投注
-// ================================================================
 function autoSplitPureNumberLines(text) {
     if (!text) return text;
-
     var lines = text.split('\n');
     var result = [];
 
@@ -1478,8 +1024,7 @@ function autoSplitPureNumberLines(text) {
         if (!line) { result.push(''); continue; }
 
         var isPureNumberLine = /各/.test(line);
-        // ⭐ "各"后面必须直接跟数字，但"各组"是合法写法，排除
-        if (/各[^\d]/.test(line) && !/各组/.test(line)) {   // ⭐ 修改：排除"各组"
+        if (/各[^\d]/.test(line) && !/各组/.test(line)) {
             result.push(line);
             continue;
         }
@@ -1505,15 +1050,11 @@ function autoSplitPureNumberLines(text) {
 
         result = result.concat(parts);
     }
-
     return result.join('\n');
 }
 
-
 function calcBets() {
     const input = document.getElementById('betInput');
-
-    // ⭐ 自动分行（只针对纯数字）
     var original = input.value;
     var formatted = autoSplitPureNumberLines(original);
     if (formatted !== original) {
@@ -1540,7 +1081,6 @@ for (let i = 0; i < cleanedLines.length; i++) {
     line = line.replaceAll('号', '各');
 
 const isPureNumber = /^[\d，,、.\s]+$/.test(line);
-// 判断：行里只有数字和"各"（如 "各80" 或 "11.12.21.22各50"）
 const isNumberWithGe = /^[\d，,、.\s]*各[\d，,、.\s]*$/.test(line);
 
     if (isPureNumber) {
@@ -1549,13 +1089,11 @@ const isNumberWithGe = /^[\d，,、.\s]*各[\d，,、.\s]*$/.test(line);
             pendingNumbers.push(...nums);
         }
     } else if (isNumberWithGe && pendingNumbers.length > 0) {
-        // 纯数字 + 数字+各 → 合并
         let mergedLine = pendingNumbers.join('，') + '，' + line;
         mergedLine = mergedLine.replace(/各+/g, '各');
         mergedLines.push(mergedLine);
         pendingNumbers = [];
     } else {
-        // 其他行，先清空 pendingNumbers
         if (pendingNumbers.length > 0) {
             if (!window._missingGeShown) {
                 mergedLines.push(pendingNumbers.join('，'));
@@ -1570,7 +1108,7 @@ const isNumberWithGe = /^[\d，,、.\s]*各[\d，,、.\s]*$/.test(line);
 
 if (pendingNumbers.length > 0) {
     if (!window._missingGeShown) {
-        mergedLines.push(pendingNumbers.join('，'));  // ← 去掉 （缺少各）
+        mergedLines.push(pendingNumbers.join('，'));
         window._missingGeShown = true;
     }
 }
@@ -1587,7 +1125,6 @@ if (pendingNumbers.length > 0) {
     const result = getLotteryResult();
 
     for (const line of lines) {
-        // ⭐ 单式行（含 二中二/三中三/平码/平特 且含 /）不转换符号，保护 / 语法
         const isSingleStyle = (
     /(二中二|三中三|平码|平特|平)/.test(line) ||
     /^\d+\s*[\/#号]\s*\d+$/.test(line.trim())
@@ -1595,10 +1132,8 @@ if (pendingNumbers.length > 0) {
         
         let cleanedLine;
         if (isSingleStyle) {
-            // 单式行只做基础清理，不动 /
             cleanedLine = line.replace(/[、，,。！？*；;！?、…—·\t\n\r]+/g, '.');
         } else {
-            // 普通行：非中文非数字 → .（生肖之间的任意符号都变 .）
             cleanedLine = line.replace(/[^\u4e00-\u9fa5\d\s]/g, '.');
             cleanedLine = cleanedLine.replace(/\s+/g, ' ');
         }
@@ -1700,8 +1235,6 @@ const shuiQianDisplay = shuiQian.toFixed(2);
         const profitLabel = roundedProfit >= 0 ? '赢' : '输';
         html += '<div>' + Math.round(totalWin) + '+' + shuiQianDisplay + '-' + total + '=' + profitSign + Math.abs(roundedProfit) + profitLabel + '</div>';
 
-
-// 检查有异常的投注（未识别、简单平特需指定）
 let abnormalHtml = '';
 for (const bet of history) {
     if (bet.type === 'error') {
@@ -1760,7 +1293,6 @@ if (abnormalHtml) {
     document.getElementById('timeDisplay').textContent = new Date().toLocaleTimeString();
     let resultLines = mergedLines.map(line => {
         if (/各/.test(line)) {
-            // ⭐ 非中文非数字 → .，和上面转换保持一致
             return line.replace(/[^\u4e00-\u9fa5\d\s]/g, '.').replace(/\s+/g, ' ');
         }
         return line;
@@ -1807,7 +1339,6 @@ function autoResizeInput() {
 }
 
 function pasteAndAppend() {
-    // 方式1：调用 Android 原生桥接（APK 专用）
     if (window.jsAndroidBridge && window.jsAndroidBridge.getClipboardText) {
         try {
             var text = window.jsAndroidBridge.getClipboardText();
@@ -1818,7 +1349,6 @@ function pasteAndAppend() {
         } catch (e) {}
     }
 
-    // 方式2：旧版桥接名称兼容
     if (window.AndroidClipboard && window.AndroidClipboard.getText) {
         try {
             var text = window.AndroidClipboard.getText();
@@ -1829,7 +1359,6 @@ function pasteAndAppend() {
         } catch (e) {}
     }
 
-    // 方式3：网页标准 API（仅部分浏览器生效）
     if (navigator.clipboard && navigator.clipboard.readText) {
         navigator.clipboard.readText()
             .then(function(text) {
@@ -1843,18 +1372,15 @@ function pasteAndAppend() {
         return;
     }
 
-    // 全部失败，提示用户
     alert('无法读取剪贴板，请长按输入框手动粘贴');
 }
 
-// 辅助函数：追加文本到输入框
 function appendToInput(text) {
     var input = document.getElementById("betInput");
     var current = input.value;
     var separator = (current && current.trim() !== "") ? "\n" : "";
     var merged = current + separator + text;
 
-    // ⭐ 粘贴后自动分行（只针对纯数字）
     input.value = autoSplitPureNumberLines(merged);
 
     input.dispatchEvent(new Event("input"));
@@ -1872,10 +1398,6 @@ function fallbackCopy(text) {
     try { document.execCommand('copy'); } catch (e) {}
     ta.remove();
 }
-
-// ================================================================
-// 开奖数据获取逻辑
-// ================================================================
 
 const API_URL = 'https://macaumarksix.com/api/live2';
 const CLEAR_HOUR = 21;
@@ -1917,7 +1439,6 @@ function makeRefreshBtn(type) {
         var self = this;
 
         if (type === 'mo') {
-            // 新澳刷新：重新拉 API
             fetchAndDisplayLottery(true, true).finally(function() {
                 self.innerHTML = '<div class="refresh-icon">🔄</div><div class="refresh-text">刷新</div>';
                 self.style.opacity = '1';
@@ -1925,11 +1446,8 @@ function makeRefreshBtn(type) {
             });
         }
     });
-
     return btn;
 }
-
-
 
 function renderPlaceholders() {
     for (let i = 1; i <= 6; i++) {
@@ -2120,44 +1638,31 @@ function scheduler() {
     }
 }
 
-
 window.onload = function() {
-// ===== 直播控制 =====
-
 function checkShowLive() {
     var wrap = document.getElementById('liveWrapper');
     var scaler = document.getElementById('liveScaler');
     if (!wrap || !scaler) return;
     
-    // 这次按照真实的 1164 宽度来算比例
-    var s = Math.min(wrap.clientWidth / 1164, 1);
+    // 按照 1177 的真实宽度，自动计算屏幕该缩放多少
+    var s = Math.min(wrap.clientWidth / 1177, 1);
     scaler.style.transform = 'scale(' + s + ')';
     
-    // 高度永远是 384 乘以比例
-    wrap.style.height = (384 * s) + 'px'; 
+    // 高度也同步缩放
+    wrap.style.height = (486 * s) + 'px'; 
 }
 
 checkShowLive();
 window.addEventListener('resize', checkShowLive);
 setInterval(checkShowLive, 1000);
 
-// 加载历史记录
 loadHistoryRecords();
 window._lastDay = new Date().toDateString();
-
-// 保存按钮
 document.getElementById('saveHistoryBtn').addEventListener('click', saveCurrentRecord);
-
-// 每秒检查是否跨天
 setInterval(checkNewDay, 1000);
 
-
-    // ===== 粘贴按钮 =====
     document.getElementById('pasteBtn').addEventListener('click', pasteAndAppend);
 
-
-
-    // ===== 一键复制按钮 =====
     document.getElementById('copyInputBtn').addEventListener('click', function() {
         var text = document.getElementById('betInput').value;
         if (!text || !text.trim()) {
@@ -2180,7 +1685,6 @@ setInterval(checkNewDay, 1000);
         }
     });
 
-    // ===== 输入框事件 =====
     const betInput = document.getElementById('betInput');
     betInput.addEventListener('input', function() {
         autoResizeInput();
@@ -2190,7 +1694,6 @@ setInterval(checkNewDay, 1000);
         calcBets();
     });
 
-    // ===== 初始化 =====
     autoResizeInput();
     renderPlaceholders();
     document.getElementById('moRefreshBtn').addEventListener('click', function(){
@@ -2205,7 +1708,6 @@ setInterval(checkNewDay, 1000);
     setInterval(scheduler, 1000);
     scheduler();
 
-    // ⭐ 21:33 ~ 21:37 每 3 秒自动刷新新澳开奖区
     window._lastRefreshMark = '';
     setInterval(function() {
         var now = new Date();
@@ -2233,22 +1735,13 @@ setInterval(checkNewDay, 1000);
 
 window.refreshLottery = fetchAndDisplayLottery;
 
-
-
-
-// ================================================================
-// 历史记录功能
-// ================================================================
-
 let historyRecords = [];
 
-// 加载历史记录
 function loadHistoryRecords() {
     try {
         const saved = localStorage.getItem('betHistoryRecords');
         if (saved) {
             historyRecords = JSON.parse(saved);
-            // 检查日期，只保留今天的
             const today = new Date().toDateString();
             historyRecords = historyRecords.filter(r => {
                 const recordDate = new Date(r.timestamp).toDateString();
@@ -2262,14 +1755,12 @@ function loadHistoryRecords() {
     renderHistoryRecords();
 }
 
-// 保存历史记录到 localStorage
 function saveHistoryRecords() {
     try {
         localStorage.setItem('betHistoryRecords', JSON.stringify(historyRecords));
     } catch (e) {}
 }
 
-// 保存当前记录
 function saveCurrentRecord() {
     const input = document.getElementById('betInput');
     const content = input.value.trim();
@@ -2277,8 +1768,6 @@ function saveCurrentRecord() {
         alert('输入框为空，没有可保存的内容');
         return;
     }
-    
-    // 收集计算结果
     const box = document.getElementById('resultBox');
     const resultText = box ? box.innerText : '';
     
@@ -2294,13 +1783,11 @@ function saveCurrentRecord() {
     saveHistoryRecords();
     renderHistoryRecords();
     
-    // 提示
     const btn = document.getElementById('saveHistoryBtn');
     btn.textContent = '✅ 已保存';
     setTimeout(() => { btn.textContent = '💾 保存'; }, 1500);
 }
 
-// 渲染历史记录列表
 function renderHistoryRecords() {
     const box = document.getElementById('historyRecords');
     if (!box) return;
@@ -2325,14 +1812,12 @@ function renderHistoryRecords() {
     box.innerHTML = html;
 }
 
-// 查看记录
 function viewRecord(index) {
     const r = historyRecords[index];
     if (!r) return;
     
     let msg = '【投注内容】\n' + r.content + '\n\n【计算结果】\n' + r.resultText;
     
-    // 弹窗显示
     const modal = document.createElement('div');
     modal.style.cssText = 'position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);z-index:9999;display:flex;align-items:center;justify-content:center;padding:20px;';
     modal.innerHTML = '<div style="background:#fff;border-radius:12px;padding:16px;max-width:600px;width:100%;max-height:80vh;overflow-y:auto;">' +
@@ -2349,7 +1834,6 @@ function viewRecord(index) {
     document.body.appendChild(modal);
 }
 
-// 复制记录
 function copyRecord(index) {
     const r = historyRecords[index];
     if (!r) return;
@@ -2367,27 +1851,23 @@ function copyRecord(index) {
     }
 }
 
-// 删除记录
 function deleteRecord(index) {
     historyRecords.splice(index, 1);
     saveHistoryRecords();
     renderHistoryRecords();
 }
 
-// 清空历史
 function clearHistory() {
     historyRecords = [];
     saveHistoryRecords();
     renderHistoryRecords();
 }
 
-// 检查是否到了新的一天，到了就清空
 function checkNewDay() {
     const now = new Date();
     const today = now.toDateString();
     
     if (window._lastDay && window._lastDay !== today) {
-        // 跨天了，清空历史
         historyRecords = [];
         saveHistoryRecords();
         renderHistoryRecords();
@@ -2396,7 +1876,6 @@ function checkNewDay() {
     window._lastDay = today;
 }
 
-// 挂到 window，确保 APP WebView 能调用
 window.viewRecord = viewRecord;
 window.copyRecord = copyRecord;
 window.deleteRecord = deleteRecord;
