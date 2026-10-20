@@ -114,15 +114,13 @@
 
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
-    <!-- 直接把比例设为 auto，让原网页自己处理高度 -->
     <div id="liveScaler" style="width:100%; position:relative; overflow:hidden;">
-        <!-- 
-            top 设为 0，left 设为 0。
-            这就是一个最最纯净的 iframe，完全让原网站自己控制。
-        -->
+        
+        <!-- ⭐ 把 520 改成 450（或者 430、400），多试几次，直到黑框下面刚好切掉 -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
-            style="width:100%; height:700px; border:none; display:block;"
+            style="width:100%; height:450px; border:none; display:block;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
+            
     </div>
 </div>
 
