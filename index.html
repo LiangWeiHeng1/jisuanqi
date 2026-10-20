@@ -114,10 +114,14 @@
 
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
-    <div id="liveScaler" style="width:1177px; height:486px; position:relative; overflow:hidden; transform-origin:top left;">
-        <!-- top: -258px 是切掉网页最顶部的大Logo，left:0 是靠左 -->
+    <!-- 直接把比例设为 auto，让原网页自己处理高度 -->
+    <div id="liveScaler" style="width:100%; position:relative; overflow:hidden;">
+        <!-- 
+            top 设为 0，left 设为 0。
+            这就是一个最最纯净的 iframe，完全让原网站自己控制。
+        -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
-            style="width:1177px; height:1500px; border:none; display:block; position:absolute; top:-258px; left:0;"
+            style="width:100%; height:700px; border:none; display:block;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
     </div>
 </div>
@@ -1636,32 +1640,10 @@ function scheduler() {
 
 
 
-function checkShowLive() {
-    var wrap = document.getElementById('liveWrapper');
-    var scaler = document.getElementById('liveScaler');
-    if (!wrap || !scaler) return;
-    
-    var screenWidth = wrap.clientWidth;
-    var s;
 
-    // 手机端（宽度小于 768）强行放大，只看黑框
-    if (screenWidth < 768) {
-        s = screenWidth / 450; 
-    } else {
-        // 电脑端保持完整原貌
-        s = Math.min(screenWidth / 1177, 1);
-    }
-    
-    scaler.style.transform = 'scale(' + s + ')';
-    
-    var targetHeight = screenWidth < 768 ? 380 : 486;
-    wrap.style.height = (targetHeight * s) + 'px'; 
-}
 
-// 启动时执行一次，并绑定窗口大小变化
-checkShowLive();
-window.addEventListener('resize', checkShowLive);
-setInterval(checkShowLive, 1000);
+
+
 
 
 window.onload = function() {
