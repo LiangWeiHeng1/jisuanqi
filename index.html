@@ -113,31 +113,12 @@
 
 
 <!-- 新澳直播 -->
-<!-- 
-  外层容器：决定你最终看到的宽度和高度 
-  (如果你想让它变宽，改 max-width: 800px)
-  (如果你想让它变高，改 height: 300px)
--->
-<div style="width:100%; max-width:800px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
-    <!-- 
-调框的大小
--->
-    <div style="width:1500px; height:490px; position:relative; overflow:hidden; margin:0 auto;">
-        
-
-        <!-- 
-          内部 iframe：
-          width 和 height 必须足够大（覆盖整个网页）
-          top: 控制上下裁剪（比如 -258px 就是往上切掉 258 像素）
-          left: 控制左右裁剪（比如 -100px 就是往左切掉 100 像素）
-        -->
-<!-- 
-调框里面的大小
--->
+<div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
+    <div id="liveScaler" style="width:1177px; height:486px; position:relative; overflow:hidden; transform-origin:top left;">
+        <!-- top: -258px 是切掉网页最顶部的大Logo，left:0 是靠左 -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
-            style="width:1200px; height:1500px; border:none; display:block; position:absolute; top:-258px; left:-150px;"
+            style="width:1177px; height:1500px; border:none; display:block; position:absolute; top:-258px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
-            
     </div>
 </div>
 
@@ -1652,6 +1633,36 @@ function scheduler() {
         if (!isDrawTriggered) { if (!isPolling) { startPolling(); } }
     }
 }
+
+
+
+function checkShowLive() {
+    var wrap = document.getElementById('liveWrapper');
+    var scaler = document.getElementById('liveScaler');
+    if (!wrap || !scaler) return;
+    
+    var screenWidth = wrap.clientWidth;
+    var s;
+
+    // 手机端（宽度小于 768）强行放大，只看黑框
+    if (screenWidth < 768) {
+        s = screenWidth / 450; 
+    } else {
+        // 电脑端保持完整原貌
+        s = Math.min(screenWidth / 1177, 1);
+    }
+    
+    scaler.style.transform = 'scale(' + s + ')';
+    
+    var targetHeight = screenWidth < 768 ? 380 : 486;
+    wrap.style.height = (targetHeight * s) + 'px'; 
+}
+
+// 启动时执行一次，并绑定窗口大小变化
+checkShowLive();
+window.addEventListener('resize', checkShowLive);
+setInterval(checkShowLive, 1000);
+
 
 window.onload = function() {
 
