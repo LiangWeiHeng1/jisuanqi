@@ -114,11 +114,15 @@
 
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
-    <div id="liveScaler" style="width:100%; position:relative; overflow:hidden;">
+    <!-- 给外层框定死高度 486px -->
+    <div id="liveScaler" style="width:100%; height:230px; position:relative; overflow:hidden;">
         
-        <!-- ⭐ 把 520 改成 450（或者 430、400），多试几次，直到黑框下面刚好切掉 -->
+        <!-- 
+            ⭐ top: -180px 往上提，切掉顶部多余内容
+            ⭐ height: 1200px 是为了保证 iframe 内部有足够的高度加载整个网页 
+        -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
-            style="width:100%; height:450px; border:none; display:block;"
+            style="width:100%; height:415px; border:none; display:block; position:absolute; top:-120px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
             
     </div>
