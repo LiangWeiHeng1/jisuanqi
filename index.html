@@ -113,16 +113,18 @@
 
 
 <!-- 新澳直播 -->
-<div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#f0f2f5; position:relative;">
-    <!-- 容器保持 1177 的原始比例，高 486 -->
+<div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
+    <!-- 尺寸严格用你画的：宽 1177，高 486 -->
     <div id="liveScaler" style="width:1177px; height:486px; position:relative; overflow:hidden; transform-origin:top left;">
+        
         <!-- 
-            top: -258px 是精准切掉上面导航栏的偏移量。
-            没有左侧偏移，完全靠左。
+            top: -258px (精准切掉上面的网站大Logo和菜单)
+            left: 0 (从最左边开始，绝不切掉左侧的内容)
         -->
         <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
             style="width:1177px; height:1500px; border:none; display:block; position:absolute; top:-258px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
+            
     </div>
 </div>
 
@@ -1644,11 +1646,11 @@ function checkShowLive() {
     var scaler = document.getElementById('liveScaler');
     if (!wrap || !scaler) return;
     
-    // 按照 1177 的真实宽度，自动计算屏幕该缩放多少
+    // 纯正的等比缩放，不管手机还是电脑，都不会变形
     var s = Math.min(wrap.clientWidth / 1177, 1);
     scaler.style.transform = 'scale(' + s + ')';
     
-    // 高度也同步缩放
+    // 高度严格按 486 缩放
     wrap.style.height = (486 * s) + 'px'; 
 }
 
