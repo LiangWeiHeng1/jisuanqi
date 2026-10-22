@@ -101,7 +101,7 @@
 <div class="lottery-info" id="lotteryInfoHK" style="margin-top:10px;padding:0;overflow:hidden;">
 <iframe
     id="hkDrawIframe"
-    src="                                                                  "
+    src="https://xgkaijjiang-kj2025-02-28.ceapleu.com:2099/index920-35.html"
     style="width:100%;height:150px;border:none;display:block;"
     scrolling="no"
     loading="lazy"
@@ -114,18 +114,16 @@
 
 <!-- 新澳直播 -->
 <div id="liveWrapper" style="width:100%; max-width:1177px; margin:0 auto; border-radius:12px; overflow:hidden; background:#fff; position:relative;">
-    <!-- 给外层框定死高度 486px -->
     <div id="liveScaler" style="width:100%; height:335px; position:relative; overflow:hidden;">
-        
-        <!-- 
-            ⭐ top: -180px 往上提，切掉顶部多余内容
-            ⭐ height: 1200px 是为了保证 iframe 内部有足够的高度加载整个网页 
-        -->
-        <iframe id="liveIframe" src="                                "
+        <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
             style="width:100%; height:700px; border:none; display:block; position:absolute; top:-50px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
-            
     </div>
+</div>
+
+<!-- ⭐ 倒计时显示区域 -->
+<div id="liveCountdown" style="width:100%; text-align:center; padding: 12px 0; background: #fff; font-size: 15px; font-weight: bold; color: #1a2332; border-radius: 8px; margin-top: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+    正在计算...
 </div>
 
 
@@ -1102,7 +1100,6 @@ function renderSpecialStats(stat) {
 }
 
 
-
 function calcBets() {
     const input = document.getElementById('betInput');
     var original = input.value;
@@ -1691,14 +1688,6 @@ function scheduler() {
     }
 }
 
-
-
-
-
-
-
-
-
 window.onload = function() {
 
 
@@ -1929,71 +1918,44 @@ window.clearHistory = clearHistory;
 window.saveCurrentRecord = saveCurrentRecord;
 window.clearAll = clearAll;
 
-
-
 // ================================================================
 // 每天自动倒计时（精确到 21:33:00）
 // ================================================================
-function initLiveCountdown() {
-    var liveWrapper = document.getElementById('liveWrapper');
-    if (!liveWrapper) return;
+setInterval(function() {
+    var countdownEl = document.getElementById('liveCountdown');
+    if (!countdownEl) return;
 
-    // 避免重复添加
-    if (document.getElementById('liveCountdown')) return;
+    var now = new Date();
+    // 设定每天 21:33:00 开始
+    var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 33, 0);
+    // 设定每天 21:38:00 结束
+    var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 38, 0);
 
-    var countdownEl = document.createElement('div');
-    countdownEl.id = 'liveCountdown';
-    countdownEl.style.cssText = 'width:100%; text-align:center; padding: 12px 0; background: #fff; font-size: 15px; font-weight: bold; color: #1a2332; border-radius: 0 0 12px 12px; margin-top: 5px; box-sizing: border-box;';
-    
-    // 把它插在黑框下面
-    liveWrapper.parentNode.insertBefore(countdownEl, liveWrapper.nextSibling);
-
-    function updateTime() {
-        var now = new Date();
-        
-        // 设置每天的开始时间 21:33:00
-        var target = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 33, 0);
-        // 设置每天的结束时间 21:38:00
-        var end = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 21, 38, 0);
-
-        // 情况1：正在直播中 (21:33 - 21:38)
-        if (now >= target && now < end) {
-            countdownEl.innerHTML = '🔴 直播正在进行中...';
-            countdownEl.style.color = '#2e7d32'; // 绿色
-            return;
-        }
-
-        // 情况2：如果今天已经过了 21:33（说明直播已经结束了）
-        // 自动把目标时间推迟到明天的 21:33
-        if (now >= target) {
-            target.setDate(target.getDate() + 1);
-        }
-
-        // 计算当前时间距离目标时间还有多少毫秒
-        var diff = target - now;
-        
-        var h = Math.floor(diff / (1000 * 60 * 60));
-        var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        var s = Math.floor((diff % (1000 * 60)) / 1000);
-
-        // 补零
-        h = h < 10 ? '0' + h : h;
-        m = m < 10 ? '0' + m : m;
-        s = s < 10 ? '0' + s : s;
-
-        // 拼接显示
-        countdownEl.innerHTML = '倒计时：<span style="color:#ff0000;">' + h + '</span> 时 <span style="color:#ff0000;">' + m + '</span> 分 <span style="color:#ff0000;">' + s + '</span> 秒';
-        countdownEl.style.color = '#1a2332';
+    // 正在直播
+    if (now >= target && now < end) {
+        countdownEl.innerHTML = '🔴 直播正在进行中...';
+        countdownEl.style.color = '#2e7d32';
+        return;
     }
 
-    // 启动定时器，每秒执行一次
-    setInterval(updateTime, 1000);
-    updateTime(); // 页面刚加载时立刻执行一次，避免显示 1 秒空白
-}
+    // 如果过了今天的 21:33，算明天的
+    if (now >= target) {
+        target.setDate(target.getDate() + 1);
+    }
 
-// 绑定到页面加载完成事件
-window.addEventListener('load', initLiveCountdown);
+    // 计算倒计时
+    var diff = target - now;
+    var h = Math.floor(diff / (1000 * 60 * 60));
+    var m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+    var s = Math.floor((diff % (1000 * 60)) / 1000);
 
+    h = h < 10 ? '0' + h : h;
+    m = m < 10 ? '0' + m : m;
+    s = s < 10 ? '0' + s : s;
+
+    countdownEl.innerHTML = '距离今晚 21:33 直播开始还有：<span style="color:#ff0000;">' + h + '</span> 时 <span style="color:#ff0000;">' + m + '</span> 分 <span style="color:#ff0000;">' + s + '</span> 秒';
+    countdownEl.style.color = '#1a2332';
+}, 1000);
 
 </script>
 </body>
