@@ -101,7 +101,7 @@
 <div class="lottery-info" id="lotteryInfoHK" style="margin-top:10px;padding:0;overflow:hidden;">
 <iframe
     id="hkDrawIframe"
-    src="https://xgkaijjiang-kj2025-02-28.ceapleu.com:2099/index920-35.html"
+    src="                                                                  "
     style="width:100%;height:150px;border:none;display:block;"
     scrolling="no"
     loading="lazy"
@@ -121,7 +121,7 @@
             ⭐ top: -180px 往上提，切掉顶部多余内容
             ⭐ height: 1200px 是为了保证 iframe 内部有足够的高度加载整个网页 
         -->
-        <iframe id="liveIframe" src="https://macaujc.com/open_video2/"
+        <iframe id="liveIframe" src="                                "
             style="width:100%; height:700px; border:none; display:block; position:absolute; top:-50px; left:0;"
             scrolling="no" allowfullscreen loading="lazy"></iframe>
             
@@ -156,6 +156,10 @@
     <div class="result-box" id="resultBox">
         <div class="empty-result">输入投注自动计算</div>
     </div>
+<div id="specialStatsBox" style="background:#f8f9fb; border-radius:12px; padding:12px 14px; margin:0 0 16px 0; border:1px solid #eef1f5;">
+    <div style="font-size:14px; font-weight:600; color:#1a2332; margin-bottom:10px;">🎯 特码统计（1-49）</div>
+    <div id="specialStatsGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;"></div>
+</div>
 
 <div id="historySection" style="margin-bottom:16px;">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
@@ -1055,6 +1059,50 @@ function autoSplitPureNumberLines(text) {
     return result.join('\n');
 }
 
+// ================================================================
+// 特码统计：1-49 每个号码的投注金额（只统计特码）
+// ================================================================
+function buildSpecialStats(betList) {
+    const stat = new Array(50).fill(0);
+    for (const bet of betList) {
+        if (bet.category !== 'special') continue;
+        if (bet.type !== 'expand') continue;
+        const items = bet.items || [];
+        const price = bet.unitPrice || 0;
+        if (price <= 0) continue;
+        for (const num of items) {
+            if (num >= 1 && num <= 49) {
+                stat[num] += price;
+            }
+        }
+    }
+    return stat;
+}
+
+function renderSpecialStats(stat) {
+    const grid = document.getElementById('specialStatsGrid');
+    if (!grid) return;
+
+    let html = '';
+    for (let i = 1; i <= 49; i++) {
+        const amt = stat[i];
+        const active = amt > 0;
+        const numStr = String(i).padStart(2, '0');
+        const bg = active ? '#ffffff' : '#f2f4f7';
+        const border = active ? '#4f7cff' : '#e2e6ea';
+        const numColor = active ? '#1a2332' : '#b0b8c4';
+        const amtColor = active ? '#c62828' : '#b0b8c4';
+        const amtText = active ? (Math.round(amt * 100) / 100) : '0';
+        html += '<div style="background:' + bg + '; border:1px solid ' + border + '; border-radius:8px; padding:5px 2px; text-align:center; line-height:1.25;">' +
+            '<div style="font-size:13px; font-weight:700; color:' + numColor + ';">' + numStr + '</div>' +
+            '<div style="font-size:12px; font-weight:600; color:' + amtColor + ';">' + amtText + '</div>' +
+            '</div>';
+    }
+    grid.innerHTML = html;
+}
+
+
+
 function calcBets() {
     const input = document.getElementById('betInput');
     var original = input.value;
@@ -1301,6 +1349,8 @@ if (abnormalHtml) {
     });
     input.value = resultLines.join('\n');
     autoResizeInput();
+    const stat = buildSpecialStats(history);
+    renderSpecialStats(stat);
 }
 
 function renderHistory() {
@@ -1332,6 +1382,7 @@ function clearAll() {
     document.getElementById('countDisplay').textContent = '共 0 条';
     document.getElementById('timeDisplay').textContent = '';
     autoResizeInput();
+    renderSpecialStats(new Array(50).fill(0));
 }
 
 function autoResizeInput() {
