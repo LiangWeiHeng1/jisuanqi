@@ -1096,6 +1096,13 @@ function renderSpecialStats(stat) {
 function calcBets() {
     const input = document.getElementById('betInput');
     var original = input.value;
+
+    // ✅ 把 = 全部改成 各
+    if (original.includes('=')) {
+        original = original.replace(/=/g, '各');
+        input.value = original;
+    }
+
     var formatted = autoSplitPureNumberLines(original);
     if (formatted !== original) {
         input.value = formatted;
