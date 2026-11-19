@@ -148,7 +148,11 @@
         <div class="empty-result">输入投注自动计算</div>
     </div>
 <div id="specialStatsBox" style="background:#f8f9fb; border-radius:12px; padding:12px 14px; margin:0 0 16px 0; border:1px solid #eef1f5;">
-    <div style="font-size:14px; font-weight:600; color:#1a2332; margin-bottom:10px;">🎯 特码统计（1-49）</div>
+    <div style="font-size:14px; font-weight:600; color:#1a2332; margin-bottom:10px;">
+        🎯 特码统计（1-49）
+        <span style="display:inline-block; margin-left:8px; font-size:12px; font-weight:400; color:#4f7cff; background:#e8edff; padding:2px 8px; border-radius:10px; vertical-align:middle;">五行</span>
+        <span style="display:inline-block; margin-left:4px; font-size:12px; font-weight:400; color:#4f7cff; background:#e8edff; padding:2px 8px; border-radius:10px; vertical-align:middle;">几段</span>
+    </div>
     <div id="specialStatsGrid" style="display:grid; grid-template-columns:repeat(7, 1fr); gap:6px;"></div>
 </div>
 
@@ -1512,6 +1516,27 @@ function renderPlaceholders() {
     document.getElementById('w7').style.color = '#8895aa';
 }
 
+// 五行对照表（按用户提供的表）
+const WUXING_MAP = (function () {
+    const map = {};
+    const groups = {
+        '金': [4, 5, 12, 13, 26, 27, 34, 35, 42, 43],
+        '木': [8, 9, 16, 17, 24, 25, 38, 39, 46, 47],
+        '水': [1, 14, 15, 22, 23, 30, 31, 44, 45],
+        '火': [2, 3, 10, 11, 18, 19, 32, 33, 40, 41, 48, 49],
+        '土': [6, 7, 20, 21, 28, 29, 36, 37]
+    };
+    for (const wx in groups) {
+        for (const n of groups[wx]) map[n] = wx;
+    }
+    return map;
+})();
+
+function displayAllNumbers(codes, waves, zodiacs, period, openTime) {
+    // ...
+}
+
+
 function displayAllNumbers(codes, waves, zodiacs, period, openTime) {
     const dateStr = openTime ? openTime.split(' ')[0] : '';
     lotteryDateEl.textContent = '📅 ' + dateStr;
@@ -1529,13 +1554,20 @@ function displayAllNumbers(codes, waves, zodiacs, period, openTime) {
         boxEl.style.color = '#fff';
     }
 
-    const s1 = document.getElementById('s1');
-    const s1x = document.getElementById('s1x');
-    const w7 = document.getElementById('w7');
-    s1.textContent = String(codes[6]).padStart(2, '0');
-    s1x.textContent = zodiacs[6] || '--';
-    w7.style.background = colorMap[waves[6]] || '#ff0000';
-    w7.style.color = '#fff';
+const s1 = document.getElementById('s1');
+const s1x = document.getElementById('s1x');
+const w7 = document.getElementById('w7');
+s1.textContent = String(codes[6]).padStart(2, '0');
+
+// 特码五行 + 几段
+const teMaNum = codes[6];
+const teMaWuxing = WUXING_MAP[teMaNum] || '';
+const teMaDuan = Math.ceil(teMaNum / 7);
+const teMaExtra = teMaWuxing ? teMaWuxing + '/' + teMaDuan + '段' : '';
+s1x.textContent = (zodiacs[6] || '--') + (teMaExtra ? ' ' + teMaExtra : '');
+
+w7.style.background = colorMap[waves[6]] || '#ff0000';
+w7.style.color = '#fff';
 }
 
 function displayNumbersOneByOne(codes, waves, zodiacs, period, openTime) {
