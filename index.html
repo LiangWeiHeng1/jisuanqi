@@ -1564,7 +1564,7 @@ const teMaNum = codes[6];
 const teMaWuxing = WUXING_MAP[teMaNum] || '';
 const teMaDuan = Math.ceil(teMaNum / 7);
 const teMaExtra = teMaWuxing ? teMaWuxing + '/' + teMaDuan + '段' : '';
-s1x.textContent = (zodiacs[6] || '--') + (teMaExtra ? ' ' + teMaExtra : '');
+s1x.innerHTML = (zodiacs[6] || '--') + (teMaExtra ? '<br>' + teMaExtra : '');
 
 w7.style.background = colorMap[waves[6]] || '#ff0000';
 w7.style.color = '#fff';
